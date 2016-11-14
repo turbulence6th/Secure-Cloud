@@ -1,0 +1,20 @@
+{
+  "manifest_version": 2,
+
+  "name": "Secure Cloud",
+  "description": "A Cloud Storage System with End to End Security",
+  "version": "1.0",
+
+  "browser_action": {
+    "default_icon": "images/icon.png",
+    "default_popup": "popup.html",
+    "default_title": "Secure Cloud!"
+  },
+  "permissions": [
+    "activeTab",
+    "https://ajax.googleapis.com/"
+  ]
+
+
+
+}
