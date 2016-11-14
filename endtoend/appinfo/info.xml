@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<info>
+    <id>endtoend</id>
+    <name>End To End</name>
+    <description>End to End</description>
+    <licence>AGPL</licence>
+    <author>Cengaverler</author>
+    <version>0.0.1</version>
+    <namespace>EndToEnd</namespace>
+    <category>other</category>
+    <dependencies>
+        <owncloud min-version="9" />
+    </dependencies>
+</info>
