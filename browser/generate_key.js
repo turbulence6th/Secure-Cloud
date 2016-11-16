@@ -1,37 +1,64 @@
 function generate_key() {
 	
-	var Username = document.getElementById('username').value;
-	var Password = document.getElementById('password').value; 
-	
-	// owncloud login request	
-	if (owncloudLoginRequest(Username,Password)) {
-		// generate rsa keys
+	// generate rsa keys
 		var keyPair;
-		createAndSaveAKeyPair();
-		// send key pair to indexed db
-		var keyStore = new KeyStore();
-		keyStore.open().then(function() {
-			keyStore.saveKey(keyPair.publicKey, keyPair.privateKey, 'SECURE_CLOUD_KEY_PAIR');
-		});
-		/* get keys from indexed db
-			var pair = keyStore.getKey("name","SECURE_CLOUD_KEY_PAIR");
-			var pub,pri; 
-			pair.then(function(object) { pub = object.publicKey});
-			pair.then(function(object) { pri = object.privateKey});
-		*/
-		var publicKey = keyPair.publicKey;
-		// send public key to the server
-		if (owncloudSendPublicKey(Username,Password,publicKey)) {	
-			alert("RSA Key pair has succesfully created and public key has sent to server")
-		} else {
-			alert("An error occured");
-		}
-	} else {
-		alert("Login Failed");
-	}
+		createAndSaveAKeyPair().then(exportPublicKey);
+
+}
+
+		
+function exportPublicKey(key) {
+	window.crypto.subtle.exportKey(
+		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+		key.publicKey //can be a publicKey or privateKey, as long as extractable was true
+	)
+	.then(function(keydata){
+		//returns the exported key data
+		console.log(keydata);
+		var result = {};
+		result.publicKey = keydata;
+		result.key = key;
+		// export private key
+		exportPrivateKey(result);
+	})
+	.catch(function(err){
+		console.error(err);
+	});
 	
 }
 
+function exportPrivateKey(param) {
+	console.log(param);
+	window.crypto.subtle.exportKey(
+		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+		param.key.privateKey //can be a publicKey or privateKey, as long as extractable was true
+	)
+	.then(function(keydata){
+		//returns the exported key data
+		//console.log(keydata);
+		var result = {};
+		result.publicKey = JSON.stringify(param.publicKey);
+		result.privateKey = JSON.stringify(keydata);
+		chrome.storage.sync.set({"SECURE_CLOUD_PUBLIC_KEY" : result.publicKey}, function() {
+          // Notify that we saved.
+          alert('Public key saved');
+        });
+		chrome.storage.sync.set({"SECURE_CLOUD_PRIVATE_KEY" : result.privateKey}, function() {
+          // Notify that we saved.
+          alert('Private key saved');
+        });
+		result.key = param.key;
+		console.log(result.publicKey);
+		console.log(result.privateKey);
+		// send public key to the server
+		owncloudSendPublicKey(result.publicKey);
+	})
+	.catch(function(err){
+		console.error(err);
+	});
+}
+
+		
 function createAndSaveAKeyPair() {
 
 	// Side effect: updates keyPair in enclosing scope with new value.
@@ -52,13 +79,11 @@ function createAndSaveAKeyPair() {
 
 }
 
-function owncloudSendPublicKey(username,password,key) {
+function owncloudSendPublicKey(key) {
 	var http = new XMLHttpRequest();
-	var url = "http://144.122.221.34/owncloud/index.php/apps/endtoend/publickeymanagement";
+	var url = "http://144.122.130.1/owncloud/index.php/apps/endtoend/setPublicKey";
 
 	var data={};
-	data.username = username;
-	data.password = password;
 	data.key = key;
 
 	var string = JSON.stringify(data);
@@ -69,67 +94,24 @@ function owncloudSendPublicKey(username,password,key) {
 	http.onreadystatechange = function() {//Call a function when the state changes.
 		if(http.readyState == 4 && http.status == 200) {
 			alert(http.responseText);
+			data.resp = JSON.parse(http.responseText);
+			if(data.resp.success==false){
+				alert('That didn\'t work!');
+			}else{
+				alert("RSA Key pair has succesfully created and public key has sent to server")
+			}
 		}
 		if (http.readyState != 4) return false;
 		if (http.status != 200 && http.status != 304) {
 			alert('HTTP error ' + http.status);
-			return false;
 		}
 
-		data.resp = JSON.parse(http.responseText);
-		if(data.resp.success==false){
-			alert('That didn\'t work!');
-			return false;
-		}else{
-			alert('That worked!');
-			return true;
-		}
 	}
 
 	http.send(string);
 
 	return false; //prevent native form submit
 
-}
-
-function owncloudLoginRequest(username,password) {
-	var http = new XMLHttpRequest();
-	var url = "http://144.122.221.34/register.php";
-
-	var data={};
-    	data.username = username;
-    	data.password = password;
-
-	var string = JSON.stringify(data);
-
-	http.open('POST',url,true);
-    	//http.setRequestHeader("Content-type", "application/json; charset=utf-8");
-	http.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
- 
-	http.onreadystatechange = function() {//Call a function when the state changes.
-	    	if(http.readyState == 4 && http.status == 200) {
-			alert(http.responseText);
-	    	}
-	    	if (http.readyState != 4) return false;
-		if (http.status != 200 && http.status != 304) {
-		    alert('HTTP error ' + http.status);
-		    return false;
-		}
-
-		data.resp = JSON.parse(http.responseText);
-		if(data.resp.success==false){
-		    alert('That didn\'t work!');
-		    return false;
-		    
-		}else{
-		    alert('That worked!');
-			return true;
-	    	}
-	}
-
-   	 http.send(string);
-
-    return false; //prevent native form submit
 }
 
 
