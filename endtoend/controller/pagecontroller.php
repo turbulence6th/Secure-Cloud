@@ -15,14 +15,20 @@ use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
 use OCP\AppFramework\Controller;
+use OCP\IUserManager;
+use \OCA\EndToEnd\Db\Author;
 
 class PageController extends Controller {
 
 
 	private $userId;
+	
+	private $userManager;
 
-	public function __construct($AppName, IRequest $request, $UserId){
-		parent::__construct($AppName, $request);
+	public function __construct($AppName, IRequest $request, IUserManager $userManager, $UserId){
+		parent::__construct($AppName, $request, 'POST',
+            'Authorization, Content-Type, Accept', 1728000);
+		$this->userManager = $userManager;
 		$this->userId = $UserId;
 	}
 
@@ -38,16 +44,20 @@ class PageController extends Controller {
 	 */
 	public function index() {
 		$params = ['user' => $this->userId];
+		$author = new Author();
+		$author->setName('Some*thing');
 		return new TemplateResponse('endtoend', 'main', $params);  // templates/main.php
 	}
 
 	/**
 	 * Simply method that posts back the payload of the request
 	 * @NoAdminRequired
+	 * @NoCSRFRequired
 	 */
-	public function doEcho($echo) {
-		return new DataResponse(['echo' => $echo]);
+	public function login($username, $password) {
+		return new DataResponse(['success' => $this->userManager->checkPassword($username, $password)]);
 	}
+	
 
 
 }

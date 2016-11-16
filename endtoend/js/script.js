@@ -11,18 +11,19 @@
 (function ($, OC) {
 
 	$(document).ready(function () {
-		$('#hello').click(function () {
-			alert('Hello from your script file');
+		$('#cryptoUpload').click(function () {
+			$("#file").trigger("click");
 		});
 
 		$('#echo').click(function () {
-			var url = OC.generateUrl('/apps/endtoend/echo');
+			var url = OC.generateUrl('/apps/endtoend/login');
 			var data = {
-				echo: $('#echo-content').val()
+				username: "user",
+				password: "user"
 			};
 
 			$.post(url, data).success(function (response) {
-				$('#echo-result').text(response.echo);
+				$('#echo-result').text(response.success);
 			});
 
 		});
