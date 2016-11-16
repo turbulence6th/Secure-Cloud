@@ -1,20 +1,32 @@
 {
-  "manifest_version": 2,
-
-  "name": "Secure Cloud",
-  "description": "A Cloud Storage System with End to End Security",
-  "version": "1.0",
-
-  "browser_action": {
-    "default_icon": "images/icon.png",
-    "default_popup": "popup.html",
-    "default_title": "Secure Cloud!"
-  },
-  "permissions": [
-    "activeTab",
-    "https://ajax.googleapis.com/"
-  ]
-
-
-
+    "manifest_version": 2,
+    
+    "name": "Secure Cloud",
+    "description": "A Cloud Storage System with End to End Security",
+    "version": "1.0",
+    
+    "background": {
+        "scripts": ["background.js"]
+    }
+    "browser_action": {
+        "default_icon": "images/icon.png",
+        "default_popup": "popup.html",
+        "default_title": "Secure Cloud!"
+    },
+    "content_scripts": [{
+                        "matches": ["https://*/owncloud*","http://*/owncloud*"],
+                        "js": [
+                               "encrypt.js",
+                               "decrypt.js",
+                               "key_store.js",
+                               
+                               ]
+                        }],
+    "permissions": [
+                    "activeTab",
+                    "https://ajax.googleapis.com/"
+                    ]
+    
+    
+    
 }
