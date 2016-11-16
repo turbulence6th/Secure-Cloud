@@ -39,19 +39,11 @@ function exportPrivateKey(param) {
 		var result = {};
 		result.publicKey = JSON.stringify(param.publicKey);
 		result.privateKey = JSON.stringify(keydata);
-		chrome.storage.sync.set({"SECURE_CLOUD_PUBLIC_KEY" : result.publicKey}, function() {
-          // Notify that we saved.
-          alert('Public key saved');
-        });
-		chrome.storage.sync.set({"SECURE_CLOUD_PRIVATE_KEY" : result.privateKey}, function() {
-          // Notify that we saved.
-          alert('Private key saved');
-        });
 		result.key = param.key;
 		console.log(result.publicKey);
 		console.log(result.privateKey);
 		// send public key to the server
-		owncloudSendPublicKey(result.publicKey);
+		owncloudSendPublicKey(result.publicKey,result.privateKey);
 	})
 	.catch(function(err){
 		console.error(err);
@@ -79,12 +71,12 @@ function createAndSaveAKeyPair() {
 
 }
 
-function owncloudSendPublicKey(key) {
+function owncloudSendPublicKey(publicKey,privateKey) {
 	var http = new XMLHttpRequest();
 	var url = "http://144.122.130.1/owncloud/index.php/apps/endtoend/setPublicKey";
 
 	var data={};
-	data.key = key;
+	data.key = publicKey;
 
 	var string = JSON.stringify(data);
 
@@ -93,12 +85,23 @@ function owncloudSendPublicKey(key) {
 
 	http.onreadystatechange = function() {//Call a function when the state changes.
 		if(http.readyState == 4 && http.status == 200) {
-			alert(http.responseText);
 			data.resp = JSON.parse(http.responseText);
-			if(data.resp.success==false){
-				alert('That didn\'t work!');
+			if(data.resp.login==false){
+				alert('You have to login first');
 			}else{
-				alert("RSA Key pair has succesfully created and public key has sent to server")
+				if (data.resp.success == true) {
+					alert("RSA Key pair has succesfully created and public key has sent to server");
+					chrome.storage.sync.set({"SECURE_CLOUD_PUBLIC_KEY" : publicKey}, function() {
+					  // Notify that we saved.
+					  alert('Public key saved');
+					});
+					chrome.storage.sync.set({"SECURE_CLOUD_PRIVATE_KEY" : privateKey}, function() {
+					  // Notify that we saved.
+					  alert('Private key saved');
+					});
+				} else {
+					alert("You have already generated a key pair");
+				}
 			}
 		}
 		if (http.readyState != 4) return false;
