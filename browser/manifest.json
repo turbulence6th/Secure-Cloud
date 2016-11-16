@@ -14,7 +14,7 @@
                         "matches": ["https://*/owncloud*","http://*/owncloud*"],
                         "js": [
                                "encrypt.js",
-                               "key_store.js",
+                               "key_store.js"
                                
                                ]
                         }],
