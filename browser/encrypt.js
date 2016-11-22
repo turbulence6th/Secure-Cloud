@@ -9,9 +9,33 @@ alert("Your current browser does not support the Web Cryptography API! This page
 
 }
 
+var exportedPrivateKey,exportedPublicKey;
 
-var exportedPrivateKey = JSON.parse(chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY"));
-var exportedPublicKey = JSON.parse(chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY"));
+chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
+{
+    if(chrome.runtime.lastError)
+    {
+        /* error */
+
+        return;
+    }
+
+     exportedPrivateKey = JSON.parse(data.SECURE_CLOUD_PRIVATE_KEY);
+
+});
+
+chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
+{
+    if(chrome.runtime.lastError)
+    {
+        /* error */
+
+        return;
+    }
+
+     exportedPublicKey = JSON.parse(data.SECURE_CLOUD_PUBLIC_KEY);
+
+});
 
 var publicKey,privateKey;
 
@@ -33,7 +57,7 @@ window.crypto.subtle.importKey(
 	publicKey = key;
 })
 .catch(function(err){
-    console.error(err);
+    //console.error(err);
 });
 
 //import private key
@@ -54,8 +78,10 @@ window.crypto.subtle.importKey(
 	privateKey = key;
 })
 .catch(function(err){
-    console.error(err);
+    //console.error(err);
 });
+
+
 
 
 // Click handlers to encrypt or decrypt the given file:
@@ -84,8 +110,8 @@ function encryptTheFile(file,publicKey) {
 		catch(function(err) {
 			alert("Something went wrong encrypting: " + err.message + "\n" + err.stack);
 		});
-	}
-}
+	
+
 
 function encrypt(plaintext,publicKey) {
 // Returns a Promise that yields a Blob to its
@@ -251,3 +277,29 @@ function decryptTheFile(file,privateKey) {
         } // end of processTheFile
         } // end of decryptTheFile
             
+
+
+
+function uploadFile() {
+	var formData = new FormData();
+	file = document.getElementById('file').files[0];
+	encryptTheFile(file,publicKey).then(function(encryptedFile) {
+		console.log(encryptedFile);
+		formData.append('file',encryptedFile);		
+		$.ajax({	
+			url : 'http://144.122.131.77/owncloud/index.php/apps/endtoend/fileUpload',
+			data : formData,
+			cache : false,
+			contentType : false,
+			processData : false,
+			type : 'POST',
+			success : function(data) {
+				if(data.success){
+					refresh();
+				}
+			}
+		});	
+	});
+}
+
+document.getElementById("submitFile").addEventListener("click",uploadFile);

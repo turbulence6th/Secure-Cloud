@@ -73,7 +73,7 @@ function createAndSaveAKeyPair() {
 
 function owncloudSendPublicKey(publicKey,privateKey) {
 	var http = new XMLHttpRequest();
-	var url = "http://144.122.130.1/owncloud/index.php/apps/endtoend/setPublicKey";
+	var url = "http://144.122.131.77/owncloud/index.php/apps/endtoend/setPublicKey";
 
 	var data={};
 	data.key = publicKey;
