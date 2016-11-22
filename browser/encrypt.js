@@ -41,20 +41,21 @@ var publicKey,privateKey;
 
 // import public key
 window.crypto.subtle.importKey(
-    "spki", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
     exportedPublicKey,
     {   //these are the algorithm options
         name: "RSA-OAEP",
         hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
     },
-    false, //whether the key is extractable (i.e. can be used in exportKey)
+    true, //whether the key is extractable (i.e. can be used in exportKey)
     ["encrypt"] //"encrypt" or "wrapKey" for public key import or
                 //"decrypt" or "unwrapKey" for private key imports
 )
 .then(function(key){
     //returns a publicKey (or privateKey if you are importing a private key)
     //console.log(key);
-	publicKey = key;
+	public = key;
+	//console.log(key);
 })
 .catch(function(err){
     //console.error(err);
@@ -62,13 +63,13 @@ window.crypto.subtle.importKey(
 
 //import private key
 window.crypto.subtle.importKey(
-    "pkcs8", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
     exportedPrivateKey,
     {   //these are the algorithm options
         name: "RSA-OAEP",
         hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
     },
-    false, //whether the key is extractable (i.e. can be used in exportKey)
+    true, //whether the key is extractable (i.e. can be used in exportKey)
     ["decrypt"] //"encrypt" or "wrapKey" for public key import or
                 //"decrypt" or "unwrapKey" for private key imports
 )
