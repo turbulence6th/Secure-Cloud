@@ -13,25 +13,7 @@ namespace OCA\EndToEnd\AppInfo;
 
 use OCP\AppFramework\App;
 
-use \OCA\EndToEnd\Db\AuthorMapper;
-
 require_once __DIR__ . '/autoload.php';
-
-class Application extends App {
-
-    public function __construct(array $urlParams=array()){
-        parent::__construct('endtoend', $urlParams);
-
-        $container = $this->getContainer();
-
-        /**
-         * Database Layer
-         */
-        $container->registerService('AuthorMapper', function($c) {
-            return new AuthorMapper($c->query('ServerContainer')->getDb());
-        });
-    }
-}
 
 $app = new App('endtoend');
 $container = $app->getContainer();

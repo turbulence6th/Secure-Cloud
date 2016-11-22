@@ -1,5 +1,9 @@
 <?php
+script('endtoend', 'bootstrap');
+script('endtoend', 'bootstrap-treeview');
 script('endtoend', 'script');
+style('endtoend', 'bootstrap');
+style('endtoend', 'bootstrap-treeview');
 style('endtoend', 'style');
 ?>
 

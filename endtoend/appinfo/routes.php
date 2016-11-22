@@ -20,6 +20,10 @@
 return [
     'routes' => [
 	   ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
-	   ['name' => 'page#login', 'url' => '/login', 'verb' => 'POST'],
+	   ['name' => 'page#setPublicKey', 'url' => '/setPublicKey', 'verb' => 'POST'],
+	   ['name' => 'page#fileUpload', 'url' => '/fileUpload', 'verb' => 'POST'],
+	   ['name' => 'page#getFileTree', 'url' => '/getFileTree', 'verb' => 'GET'],
+	   ['name' => 'page#downloadFile', 'url' => '/downloadFile', 'verb' => 'GET'],
+	   ['name' => 'page#deleteFile', 'url' => '/deleteFile', 'verb' => 'POST'],
     ]
 ];

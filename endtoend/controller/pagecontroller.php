@@ -14,50 +14,152 @@ namespace OCA\EndToEnd\Controller;
 use OCP\IRequest;
 use OCP\AppFramework\Http\TemplateResponse;
 use OCP\AppFramework\Http\DataResponse;
+use OCP\AppFramework\Http\DataDownloadResponse;
 use OCP\AppFramework\Controller;
 use OCP\IUserManager;
-use \OCA\EndToEnd\Db\Author;
+use OCP\IDBConnection;
+use OCP\IUserSession;
+use OCP\IServerContainer;
+use OCP\Files\IRootFolder;
+
+use OCA\EndToEnd\Db\PublicKeyDao;
+use OCA\EndToEnd\Storage\FileStorage;
 
 class PageController extends Controller {
 
-
-	private $userId;
-	
-	private $userManager;
-
-	public function __construct($AppName, IRequest $request, IUserManager $userManager, $UserId){
-		parent::__construct($AppName, $request, 'POST',
-            'Authorization, Content-Type, Accept', 1728000);
+	public function __construct($AppName, IRequest $request, IUserManager $userManager, IDBConnection $db, 
+		IUserSession $session, IRootFolder $rootFolder){
+			parent::__construct($AppName, $request, 'POST',
+            	'Authorization, Content-Type, Accept', 1728000);
+		$this->request = $request;
 		$this->userManager = $userManager;
-		$this->userId = $UserId;
+		$this->publicKeyDao = new PublicKeyDao($db);
+		$this->session = $session;
+		$this->rootFolder = $rootFolder;
 	}
 
 	/**
-	 * CAUTION: the @Stuff turns off security checks; for this page no admin is
-	 *          required and no CSRF check. If you don't know what CSRF is, read
-	 *          it up in the docs or you might create a security hole. This is
-	 *          basically the only required method to add this exemption, don't
-	 *          add it to any other method if you don't exactly know what it does
-	 *
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
 	public function index() {
-		$params = ['user' => $this->userId];
-		$author = new Author();
-		$author->setName('Some*thing');
-		return new TemplateResponse('endtoend', 'main', $params);  // templates/main.php
+		$user = $this->session->getLoginName();
+		$params = ['keys' => $this->publicKeyDao->find('user'), 'userFolder' => $this->rootFolder->getUserFolder($user)];
+		return new TemplateResponse('endtoend', 'main', $params);
 	}
 
 	/**
-	 * Simply method that posts back the payload of the request
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function login($username, $password) {
-		return new DataResponse(['success' => $this->userManager->checkPassword($username, $password)]);
+	public function setPublicKey($key) {
+		$user = $this->session->getLoginName();
+		if(count($this->publicKeyDao->find($user)) > 0)	{
+			return new DataResponse(['success' => false]);
+		}
+		
+		$this->publicKeyDao->add($user, $key);
+		return new DataResponse(['success' => true]);
 	}
 	
-
-
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function fileUpload() {
+		$user = $this->session->getLoginName();
+		$file = $this->request->getUploadedFile("file");
+		
+		if(!$file) {
+			return new DataResponse(['success' => false]);
+		}
+		
+		$storage = new FileStorage($this->rootFolder->getUserFolder($user));
+		$storage->writeFile($file['name'], file_get_contents($file['tmp_name']));
+			
+		return new DataResponse(['success' => true]);
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function getFileTree() {
+		$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$tree = array();
+		$tree = $this->getFolderItems($tree, $userFolder);
+			
+		return new DataResponse($tree);
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function downloadFile($fileId) {
+		$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		return new DataDownloadResponse($file->getContent(), $file->getName(), $file->getMimetype());
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function deleteFile($fileId) {
+		$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		$file->delete();
+		return new DataResponse(['success' => true]);
+	}
+	
+	private function getFolderItems($tree, $folder) {
+		foreach($folder->getDirectoryListing() as $node) {
+			if($node->getMimetype() == "httpd/unix-directory") {
+				$nodes = array();
+				$nodes = $this->getFolderItems($nodes, $node);
+				array_push($tree, array('text' => $node->getName() ,'nodes' => $nodes, 'selectable' => false));
+			}
+			
+			else {
+				$object = array('text' => $node->getName(), 'fileId' => $node->getId(), 'tags' => [$this->getSize($node->getSize())]);
+				if($this->startsWith($node->getMimetype(), 'image')) {
+					$object['icon'] = 'glyphicon glyphicon-picture';
+				}
+				
+				array_push($tree, $object);
+			}
+			
+		}
+		
+		return $tree;
+	}
+	
+	private function startsWith($haystack, $needle) {
+	     $length = strlen($needle);
+	     return (substr($haystack, 0, $length) === $needle);
+	}
+	
+	private function getSize($byte) {
+		if($byte < 1024) {
+			return round($byte) . "b";
+		}
+		
+		$byte = $byte / 1024;
+		if($byte < 1024) {
+			return round($byte) . "kb";
+		}
+		
+		$byte = $byte / 1024;
+		if($byte < 1024) {
+			return round($byte) . "mb";
+		}
+		
+		$byte = $byte / 1024;
+		return round($byte) . "gb";
+	}
+	
 }

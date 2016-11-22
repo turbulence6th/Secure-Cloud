@@ -1,11 +1,10 @@
-<!-- <p>Hello World <?php p($_['user']) ?></p> -->
+<input type="file" id="file"><br>
+<button type="button" id="submitFile">Submit</button> <br>
 
-<p><button id="cryptoUpload">Crypto Upload</button></p>
-<p><input id="file" type="file" class="hidden"></p>
+<button id="downloadFile">Download</button>
 
-<!-- <p><textarea id="echo-content">
-	Send this as ajax
-</textarea></p>
-<p><button id="echo">Send ajax request</button></p>
+<button id="refresh">Refresh</button>
 
-Ajax response: <div id="echo-result"></div> -->
+<button id="deleteFile">Delete</button>
+
+<div id="tree"></div>
