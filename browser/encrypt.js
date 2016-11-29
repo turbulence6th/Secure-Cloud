@@ -37,7 +37,7 @@ chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
 
 });
 
-var publicKey,privateKey;
+var publicKeyy,privateKeyy;
 
 // import public key
 window.crypto.subtle.importKey(
@@ -51,10 +51,10 @@ window.crypto.subtle.importKey(
     ["encrypt"] //"encrypt" or "wrapKey" for public key import or
                 //"decrypt" or "unwrapKey" for private key imports
 )
-.then(function(key){
+.then(function(publicKey){
     //returns a publicKey (or privateKey if you are importing a private key)
     //console.log(key);
-	public = key;
+	publicKeyy = publicKey;
 	//console.log(key);
 })
 .catch(function(err){
@@ -73,10 +73,10 @@ window.crypto.subtle.importKey(
     ["decrypt"] //"encrypt" or "wrapKey" for public key import or
                 //"decrypt" or "unwrapKey" for private key imports
 )
-.then(function(key){
+.then(function(privateKey){
     //returns a publicKey (or privateKey if you are importing a private key)
     //console.log(publicKey);
-	privateKey = key;
+	privateKeyy = key;
 })
 .catch(function(err){
     //console.error(err);
@@ -284,7 +284,7 @@ function decryptTheFile(file,privateKey) {
 function uploadFile() {
 	var formData = new FormData();
 	file = document.getElementById('file').files[0];
-	encryptTheFile(file,publicKey).then(function(encryptedFile) {
+	encryptTheFile(file,publicKeyy).then(function(encryptedFile) {
 		console.log(encryptedFile);
 		formData.append('file',encryptedFile);		
 		$.ajax({	
