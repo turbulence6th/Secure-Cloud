@@ -10,6 +10,57 @@ alert("Your current browser does not support the Web Cryptography API! This page
 }
 
 var exportedPrivateKey,exportedPublicKey;
+var publicKey,privateKey;
+
+
+
+// import public key
+function import_public_key(exportedPublicKey) {	
+	window.crypto.subtle.importKey(
+	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+	    exportedPublicKey,
+	    {   //these are the algorithm options
+		name: "RSA-OAEP",
+		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+	    },
+	    true, //whether the key is extractable (i.e. can be used in exportKey)
+	    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
+			//"decrypt" or "unwrapKey" for private key imports
+	)
+	.then(function(key){
+	    //returns a publicKey (or privateKey if you are importing a private key)
+	    //console.log(key);
+		publicKey = key;
+		
+	})
+	.catch(function(err){
+	    //console.error(err);
+	});
+}
+
+//import private key
+function import_private_key(exportedPrivateKey) {
+	window.crypto.subtle.importKey(
+	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+	    exportedPrivateKey,
+	    {   //these are the algorithm options
+		name: "RSA-OAEP",
+		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+	    },
+	    true, //whether the key is extractable (i.e. can be used in exportKey)
+	    ["decrypt"] //"encrypt" or "wrapKey" for public key import or
+			//"decrypt" or "unwrapKey" for private key imports
+	)
+	.then(function(key){
+	    //returns a publicKey (or privateKey if you are importing a private key)
+	    //console.log(publicKey);
+		privateKey = key;
+	})
+	.catch(function(err){
+	    //console.error(err);
+	});
+}
+
 
 chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
 {
@@ -21,6 +72,8 @@ chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
     }
 
      exportedPrivateKey = JSON.parse(data.SECURE_CLOUD_PRIVATE_KEY);
+     import_private_key(exportedPrivateKey);
+	
 
 });
 
@@ -34,52 +87,9 @@ chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
     }
 
      exportedPublicKey = JSON.parse(data.SECURE_CLOUD_PUBLIC_KEY);
+	import_public_key(exportedPublicKey);
 
-});
 
-var publicKeyy,privateKeyy;
-
-// import public key
-window.crypto.subtle.importKey(
-    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-    exportedPublicKey,
-    {   //these are the algorithm options
-        name: "RSA-OAEP",
-        hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-    },
-    true, //whether the key is extractable (i.e. can be used in exportKey)
-    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
-                //"decrypt" or "unwrapKey" for private key imports
-)
-.then(function(publicKey){
-    //returns a publicKey (or privateKey if you are importing a private key)
-    //console.log(key);
-	publicKeyy = publicKey;
-	//console.log(key);
-})
-.catch(function(err){
-    //console.error(err);
-});
-
-//import private key
-window.crypto.subtle.importKey(
-    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-    exportedPrivateKey,
-    {   //these are the algorithm options
-        name: "RSA-OAEP",
-        hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-    },
-    true, //whether the key is extractable (i.e. can be used in exportKey)
-    ["decrypt"] //"encrypt" or "wrapKey" for public key import or
-                //"decrypt" or "unwrapKey" for private key imports
-)
-.then(function(privateKey){
-    //returns a publicKey (or privateKey if you are importing a private key)
-    //console.log(publicKey);
-	privateKeyy = key;
-})
-.catch(function(err){
-    //console.error(err);
 });
 
 
@@ -105,8 +115,26 @@ function encryptTheFile(file,publicKey) {
 		var reader = this;              // Was invoked by the reader object
 		var plaintext = reader.result;
 		encrypt(plaintext, publicKey).
-		then(function(blob) {
-			return blob;
+		then(function(data) {
+			console.log(data);
+			var formData = new FormData();
+			console.log(data.encryptedFile);
+			console.log(data.encryptedKey);
+			formData.append('file',data.encryptedFile, file.name);
+			formData.append('encryptedKey', data.encryptedKey);		
+			$.ajax({	
+				url : 'http://localhost/owncloud/index.php/apps/endtoend/fileUpload',
+				data : formData,
+				cache : false,
+				contentType : false,
+				processData : false,
+				type : 'POST',
+				success : function(data) {
+					if(data.success){
+						refresh();
+					}
+				}
+			});	
 	   	}).
 		catch(function(err) {
 			alert("Something went wrong encrypting: " + err.message + "\n" + err.stack);
@@ -178,6 +206,7 @@ function encryptSessionKey(exportedKey) {
 // Returns a Promise that yields an ArrayBuffer containing
 // the encryption of the exportedKey provided as a parameter,
 // using the publicKey found in an enclosing scope.
+
 return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKey, exportedKey);
 }
 
@@ -188,7 +217,8 @@ function packageResults(encryptedKey) {
 // session key.
 
 var length = new Uint16Array([encryptedKey.byteLength]);
-return new Blob(
+	return { "encryptedKey": encryptedKey,
+	"encryptedFile": new Blob(
               [
                length,             // Always a 2 byte unsigned integer
                encryptedKey,       // "length" bytes long
@@ -196,7 +226,8 @@ return new Blob(
                encryptedFile[1]    // Remainder is the ciphertext
                ],
               {type: "application/octet-stream"}
-              );
+              )
+	};
 }
 
 } // End of encrypt
@@ -282,25 +313,11 @@ function decryptTheFile(file,privateKey) {
 
 
 function uploadFile() {
-	var formData = new FormData();
-	file = document.getElementById('file').files[0];
-	encryptTheFile(file,publicKeyy).then(function(encryptedFile) {
-		console.log(encryptedFile);
-		formData.append('file',encryptedFile);		
-		$.ajax({	
-			url : 'http://144.122.131.77/owncloud/index.php/apps/endtoend/fileUpload',
-			data : formData,
-			cache : false,
-			contentType : false,
-			processData : false,
-			type : 'POST',
-			success : function(data) {
-				if(data.success){
-					refresh();
-				}
-			}
-		});	
-	});
+	
+
+	var file = document.getElementById('file').files[0];
+	console.log(publicKey);
+	encryptTheFile(file,publicKey);
 }
 
 document.getElementById("submitFile").addEventListener("click",uploadFile);
