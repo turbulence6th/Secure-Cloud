@@ -123,7 +123,7 @@ function encryptTheFile(file,publicKey) {
 			formData.append('file',data.encryptedFile, file.name);
 			formData.append('encryptedKey', data.encryptedKey);		
 			$.ajax({	
-				url : 'http://localhost/owncloud/index.php/apps/endtoend/fileUpload',
+				url : 'https://144.122.120.17/owncloud/index.php/apps/endtoend/fileUpload',
 				data : formData,
 				cache : false,
 				contentType : false,
@@ -234,80 +234,7 @@ var length = new Uint16Array([encryptedKey.byteLength]);
 } // end of processTheFile
 } // end of encryptTheFile click handler
                         
-function decryptTheFile(file,privateKey) {
-        // Click handler. Reads the selected file, then decrypts it to
-        // the random key pair's private key. Creates a Blob with the result,
-        // and places a link to that Blob in the download-results section.
-        
-        var sourceFile = file;
-        
-        var reader = new FileReader();
-        reader.onload = processTheFile;
-        reader.readAsArrayBuffer(sourceFile);
-        
-        
-        function processTheFile() {
-        // Load handler for file reader. Needs to reference keyPair from
-        // enclosing scope.
-        var reader = this;              // Invoked by the reader object
-        var data = reader.result;
-        
-        // First, separate out the relevant pieces from the file.
-        var keyLength       = new Uint16Array(data, 0, 2)[0];   // First 16 bit integer
-        var encryptedKey    = new Uint8Array( data, 2,              keyLength);
-        var iv              = new Uint8Array( data, 2 + keyLength,  16);
-        var ciphertext      = new Uint8Array( data, 2 + keyLength + 16);
-        
-        decrypt(ciphertext, iv, encryptedKey, privateKey).
-        then(function(blob) {
-             return blob;
-             }).
-        catch(function(err) {
-              alert("Something went wrong decrypting: " + err.message + "\n" + err.stack);
-              });
-        
-        
-        function decrypt(ciphertext, iv, encryptedSessionKey, privateKey) {
-        // Returns a Promise the yields a Blob containing the decrypted ciphertext.
-        
-        return decryptKey(encryptedSessionKey, privateKey).
-        then(importSessionKey).
-        then(decryptCiphertext);
-        
-        
-        function decryptKey(encryptedKey, privateKey) {
-        // Returns a Promise that yields a Uint8Array AES key.
-        // encryptedKey is a Uint8Array, privateKey is the privateKey
-        // property of a Key key pair.
-        return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
-        }
-        
-        
-        function importSessionKey(keyBytes) {
-        // Returns a Promise yielding an AES-CBC Key from the
-        // Uint8Array of bytes it is given.
-        return window.crypto.subtle.importKey(
-                                              "raw",
-                                              keyBytes,
-                                              {name: "AES-CBC", length: 128},
-                                              true,
-                                              ["encrypt", "decrypt"]
-                                              );
-        }
-        
-        function decryptCiphertext(sessionKey) {
-        // Returns a Promise yielding a Blob containing the decryption of ciphertext
-        // (from an enclosing scope) using the sessionKey and the iv
-        // (initialization vector, from an enclosing scope).
-        return window.crypto.subtle.decrypt({name: "AES-CBC", iv: iv}, sessionKey, ciphertext).
-        then(function(plaintext) {
-             return new Blob([new Uint8Array(plaintext)], {type: "application/octet-stream"});
-             });
-        }
-        
-        } // end of decrypt
-        } // end of processTheFile
-        } // end of decryptTheFile
+
             
 
 
