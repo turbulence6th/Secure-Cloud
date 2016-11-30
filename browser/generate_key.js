@@ -91,7 +91,7 @@ function downloadit(yazi,param){
 		var blob = new Blob([yazi], {type: 'text/plain'});
 		link.href = window.URL.createObjectURL(blob);
 		
-		console.log("anan");
+		
 		link.click();
 }
 		
