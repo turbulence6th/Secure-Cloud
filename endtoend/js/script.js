@@ -11,16 +11,19 @@
 (function($, OC) {
 
 	$(document).ready(function() {
-		$("#submitFile").click(function() {
-			var formData = new FormData();
-			formData.append('file', $('#file')[0].files[0]);
-
-			$.ajax({	
-				url : OC.generateUrl('/apps/endtoend/fileUpload'),
-				data : formData,
-				cache : false,
-				contentType : false,
-				processData : false,
+		
+		
+		//$('#downloadFile').click(function() {
+			//window.location=OC.generateUrl('/apps/endtoend/downloadFile') + "?fileId=" + 
+				//$('#tree').treeview('getSelected')[0].fileId;
+		//});
+		
+		$('#deleteFile').click(function() {
+			$.ajax({
+				url : OC.generateUrl('/apps/endtoend/deleteFile'),
+				data : {
+					fileId: $('#tree').treeview('getSelected')[0].fileId
+				},
 				type : 'POST',
 				success : function(data) {
 					if(data.success){
@@ -30,14 +33,9 @@
 			});
 		});
 		
-		$('#downloadFile').click(function() {
-			window.location=OC.generateUrl('/apps/endtoend/downloadFile') + "?fileId=" + 
-				$('#tree').treeview('getSelected')[0].fileId;
-		});
-		
-		$('#deleteFile').click(function() {
+		$('#share').click(function() {
 			$.ajax({
-				url : OC.generateUrl('/apps/endtoend/deleteFile'),
+				url : OC.generateUrl('/apps/endtoend/shareFile'),
 				data : {
 					fileId: $('#tree').treeview('getSelected')[0].fileId
 				},
@@ -62,7 +60,10 @@
 						data : data,
 						showTags: true,
 						collapseIcon: "glyphicon glyphicon-folder-open",
-						expandIcon: "glyphicon glyphicon-folder-close"
+						expandIcon: "glyphicon glyphicon-folder-close",
+						onNodeSelected: function(event, data) {
+						   
+						 }
 					});
 				}
 			});

@@ -21,6 +21,7 @@ use OCP\IDBConnection;
 use OCP\IUserSession;
 use OCP\IServerContainer;
 use OCP\Files\IRootFolder;
+use OCP\Share\IManager;
 
 use OCA\EndToEnd\Db\PublicKeyDao;
 use OCA\EndToEnd\Storage\FileStorage;
@@ -28,7 +29,7 @@ use OCA\EndToEnd\Storage\FileStorage;
 class PageController extends Controller {
 
 	public function __construct($AppName, IRequest $request, IUserManager $userManager, IDBConnection $db, 
-		IUserSession $session, IRootFolder $rootFolder){
+		IUserSession $session, IRootFolder $rootFolder, IManager $manager){
 			parent::__construct($AppName, $request, 'POST',
             	'Authorization, Content-Type, Accept', 1728000);
 		$this->request = $request;
@@ -36,6 +37,7 @@ class PageController extends Controller {
 		$this->publicKeyDao = new PublicKeyDao($db);
 		$this->session = $session;
 		$this->rootFolder = $rootFolder;
+		$this->manager = $manager;
 	}
 
 	/**
@@ -44,7 +46,7 @@ class PageController extends Controller {
 	 */
 	public function index() {
 		$user = $this->session->getLoginName();
-		$params = ['keys' => $this->publicKeyDao->find('user'), 'userFolder' => $this->rootFolder->getUserFolder($user)];
+		$params = ['keys' => $this->publicKeyDao->find('user'), 'users' => $this->userManager->search('')];
 		return new TemplateResponse('endtoend', 'main', $params);
 	}
 
@@ -113,6 +115,23 @@ class PageController extends Controller {
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
 		$file->delete();
+		return new DataResponse(['success' => true]);
+	}
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function shareFile($fileId) {
+		$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		$share = $this->manager->newShare();
+		$share->setNode($file);
+		$share->setShareType(\OCP\Share::SHARE_TYPE_LINK);
+		$share->setSharedBy($user);
+		$share->setPermissions(1);
+		$this->manager->createShare($share);
 		return new DataResponse(['success' => true]);
 	}
 	
