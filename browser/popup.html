@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet"  href="bootstrap/css/bootstrap.css">
+	<script type="text/javascript" src="jquery.js" ></script>
+	<script type="text/javascript" src="jquery-ui.js" ></script>
+	<script type="text/javascript" src="bootstrap/js/bootstrap.js" ></script>
+	<script type="text/javascript" src="generate_key.js" ></script>
+	<script type="text/javascript" src="interface.js" ></script>
+	<link rel="stylesheet" href="jquery-ui.css">
+	<link rel="stylesheet" href="main.css">
+
+
+</head>
+
+<body>
+<div class="main-div">
+<div class="container">
+	<div class="row">
+		<div class="col-md-12">
+			<h4>Secure Cloud</h4>
+			<form class="form ">
+				<div class="form-group">
+					<button id="generate-key" type="button" class="btn btn-sm btn-success">Generate Key</button>
+				</div>
+			</form>
+
+			<div id="downsection">
+				<button id="download-key" class="btn btn-sm btn-success">Download The Key File</button>
+				<button id="downpub" class="btn btn-sm btn-success">Download PublicKey</button>
+				<button id="downpri" class="btn btn-sm btn-success">Download PrivateKey</button>
+			</div>
+			<br>
+
+
+			<div id="upsection">
+				<button id="upload-key" class="btn btn-sm btn-success">Upload Key</button>
+				<button id="uppub" class="btn btn-sm btn-success">Upload    PublicKey</button>
+				<button id="uppri" class="btn btn-sm btn-success">Upload    PrivateKey</button>
+			</div>
+
+			<div id="upload_menu">
+				<button id="show_upload_menu" class="btn btn-sm btn-success">Show Upload Menu</button>
+
+			</div>
+
+			<div id="file_operations">
+
+				<span class="btn btn-success">
+						<i class="glyphicon glyphicon-plus"></i>
+						<span>Add files...</span>
+
+				</span>
+				<button type="submit" class="btn btn-primary start">
+						<i class="glyphicon glyphicon-upload"></i>
+						<span>Start upload</span>
+				</button>
+
+				<button type="button" class="btn btn-danger delete">
+						<i class="glyphicon glyphicon-trash"></i>
+						<span>Delete</span>
+				</button>
+				<input type="checkbox" class="toggle">
+				<!-- The global file processing state -->
+				<span class="fileupload-process"></span>
+
+			</div>
+
+
+		</div>
+	</div>
+</div>
+</div>
+
+
+</body>
+</html>
