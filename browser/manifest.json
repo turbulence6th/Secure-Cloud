@@ -15,7 +15,8 @@
                         "js": [
                                 "jquery.js",
                                "encrypt.js",
-                               "download.js"
+                               "download.js",
+                               "share.js"
                                ],
                         "run_at": "document_end"
                         }

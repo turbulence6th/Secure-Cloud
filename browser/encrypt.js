@@ -9,9 +9,8 @@ alert("Your current browser does not support the Web Cryptography API! This page
 
 }
 
-var exportedPrivateKey,exportedPublicKey;
-var publicKey,privateKey;
-
+var exportedPublicKey;
+var publicKey;
 
 
 // import public key
@@ -31,51 +30,15 @@ function import_public_key(exportedPublicKey) {
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(key);
 		publicKey = key;
+		console.log(publicKey);
 		
 	})
 	.catch(function(err){
 	    //console.error(err);
+	    console.log("bug");
 	});
 }
 
-//import private key
-function import_private_key(exportedPrivateKey) {
-	window.crypto.subtle.importKey(
-	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-	    exportedPrivateKey,
-	    {   //these are the algorithm options
-		name: "RSA-OAEP",
-		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-	    },
-	    true, //whether the key is extractable (i.e. can be used in exportKey)
-	    ["decrypt"] //"encrypt" or "wrapKey" for public key import or
-			//"decrypt" or "unwrapKey" for private key imports
-	)
-	.then(function(key){
-	    //returns a publicKey (or privateKey if you are importing a private key)
-	    //console.log(publicKey);
-		privateKey = key;
-	})
-	.catch(function(err){
-	    //console.error(err);
-	});
-}
-
-
-chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
-{
-    if(chrome.runtime.lastError)
-    {
-        /* error */
-
-        return;
-    }
-
-     exportedPrivateKey = JSON.parse(data.SECURE_CLOUD_PRIVATE_KEY);
-     import_private_key(exportedPrivateKey);
-	
-
-});
 
 chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
 {
@@ -87,12 +50,23 @@ chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
     }
 
      exportedPublicKey = JSON.parse(data.SECURE_CLOUD_PUBLIC_KEY);
+     console.log(exportedPublicKey);
 	import_public_key(exportedPublicKey);
 
 
 });
 
 
+function arrayBufferToBase64(arrayBuffer) {
+    var byteArray = new Uint8Array(arrayBuffer);
+    var byteString = '';
+    for(var i=0; i < byteArray.byteLength; i++) {
+        byteString += String.fromCharCode(byteArray[i]);
+    }
+    var b64 = window.btoa(byteString);
+
+    return b64;
+}
 
 
 // Click handlers to encrypt or decrypt the given file:
@@ -116,14 +90,13 @@ function encryptTheFile(file,publicKey) {
 		var plaintext = reader.result;
 		encrypt(plaintext, publicKey).
 		then(function(data) {
-			console.log(data);
 			var formData = new FormData();
 			console.log(data.encryptedFile);
-			console.log(data.encryptedKey);
+			console.log(arrayBufferToBase64(data.encryptedKey));
 			formData.append('file',data.encryptedFile, file.name);
-			formData.append('encryptedKey', data.encryptedKey);		
+			formData.append('encryptedKey', arrayBufferToBase64(data.encryptedKey));		
 			$.ajax({	
-				url : 'https://144.122.120.17/owncloud/index.php/apps/endtoend/fileUpload',
+				url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/fileUpload',
 				data : formData,
 				cache : false,
 				contentType : false,
@@ -199,10 +172,12 @@ encryptedFile = ivAndCiphertext;
 function exportSessionKey() {
 // Returns a Promise that yields an ArrayBuffer export of
 // the sessionKey found in the enclosing scope.
+console.log(sessionKey);
 return window.crypto.subtle.exportKey('raw', sessionKey);
 }
 
 function encryptSessionKey(exportedKey) {
+console.log(exportedKey);
 // Returns a Promise that yields an ArrayBuffer containing
 // the encryption of the exportedKey provided as a parameter,
 // using the publicKey found in an enclosing scope.
@@ -211,12 +186,13 @@ return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKey, exportedKey);
 }
 
 function packageResults(encryptedKey) {
+	console.log(encryptedKey);
 // Returns a Blob representing the package of
 // the encryptedKey it is provided and the encryptedFile
 // (in an enclosing scope) that was created with the
 // session key.
 
-var length = new Uint16Array([encryptedKey.byteLength]);
+	var length = new Uint16Array([encryptedKey.byteLength]);
 	return { "encryptedKey": encryptedKey,
 	"encryptedFile": new Blob(
               [

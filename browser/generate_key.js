@@ -1,75 +1,72 @@
 //CONVERT PEM FILEEEEEE
-        function arrayBufferToBase64(arrayBuffer) {
-            var byteArray = new Uint8Array(arrayBuffer);
-            var byteString = '';
-            for(var i=0; i < byteArray.byteLength; i++) {
-                byteString += String.fromCharCode(byteArray[i]);
-            }
-            var b64 = window.btoa(byteString);
+function arrayBufferToBase64(arrayBuffer) {
+    var byteArray = new Uint8Array(arrayBuffer);
+    var byteString = '';
+    for(var i=0; i < byteArray.byteLength; i++) {
+        byteString += String.fromCharCode(byteArray[i]);
+    }
+    var b64 = window.btoa(byteString);
 
-            return b64;
-        }
+    return b64;
+}
 
-        function addNewLines(str) {
-            var finalString = '';
-            while(str.length > 0) {
-                finalString += str.substring(0, 64) + '\n';
-                str = str.substring(64);
-            }
+function addNewLines(str) {
+    var finalString = '';
+    while(str.length > 0) {
+        finalString += str.substring(0, 64) + '\n';
+        str = str.substring(64);
+    }
 
-            return finalString;
-        }
+    return finalString;
+}
 
-        function toPemPub(privateKey) {
-            var b64 = addNewLines(arrayBufferToBase64(privateKey));
-            var pem = "-----BEGIN PUBLIC KEY-----\n" + b64 + "-----END PUBLIC KEY-----";
-            
-            return pem;
-        }
-        function toPemPri(privateKey) {
-            var b64 = addNewLines(arrayBufferToBase64(privateKey));
-            var pem = "-----BEGIN PRIVATE KEY-----\n" + b64 + "-----END PRIVATE KEY-----";
-            
-            return pem;
-        }
-
-
-
+function toPemPub(privateKey) {
+    var b64 = addNewLines(arrayBufferToBase64(privateKey));
+    var pem = "-----BEGIN PUBLIC KEY-----\n" + b64 + "-----END PUBLIC KEY-----";
+    
+    return pem;
+}
+function toPemPri(privateKey) {
+    var b64 = addNewLines(arrayBufferToBase64(privateKey));
+    var pem = "-----BEGIN PRIVATE KEY-----\n" + b64 + "-----END PRIVATE KEY-----";
+    
+    return pem;
+}
 
 //CONVERT PEM FILEEEEEE
 
-    //CONVERT RSA-KEY
+//CONVERT RSA-KEY
 
 
-    function removeLines(str) {
-    return str.replace("\n", "");
+function removeLines(str) {
+	return str.replace("\n", "");
+}
+
+function base64ToArrayBuffer(b64) {
+    var byteString = window.atob(b64);
+    var byteArray = new Uint8Array(byteString.length);
+    for(var i=0; i < byteString.length; i++) {
+        byteArray[i] = byteString.charCodeAt(i);
     }
 
-    function base64ToArrayBuffer(b64) {
-        var byteString = window.atob(b64);
-        var byteArray = new Uint8Array(byteString.length);
-        for(var i=0; i < byteString.length; i++) {
-            byteArray[i] = byteString.charCodeAt(i);
-        }
+    return byteArray;
+}
 
-        return byteArray;
-    }
+function pemToArrayBufferPri(pem) {
+    var b64Lines = removeLines(pem);
+    var b64Prefix = b64Lines.replace('-----BEGIN PRIVATE KEY-----', '');
+    var b64Final = b64Prefix.replace('-----END PRIVATE KEY-----', '');
 
-    function pemToArrayBufferPri(pem) {
-        var b64Lines = removeLines(pem);
-        var b64Prefix = b64Lines.replace('-----BEGIN PRIVATE KEY-----', '');
-        var b64Final = b64Prefix.replace('-----END PRIVATE KEY-----', '');
+    return base64ToArrayBuffer(b64Final);
+}
 
-        return base64ToArrayBuffer(b64Final);
-    }
+function pemToArrayBufferPub(pem) {
+    var b64Lines = removeLines(pem);
+    var b64Prefix = b64Lines.replace('-----BEGIN PUBLIC KEY-----', '');
+    var b64Final = b64Prefix.replace('-----END PUBLIC KEY-----', '');
 
-    function pemToArrayBufferPub(pem) {
-        var b64Lines = removeLines(pem);
-        var b64Prefix = b64Lines.replace('-----BEGIN PUBLIC KEY-----', '');
-        var b64Final = b64Prefix.replace('-----END PUBLIC KEY-----', '');
-
-        return base64ToArrayBuffer(b64Final);
-    }
+    return base64ToArrayBuffer(b64Final);
+}
 
 
 
@@ -90,34 +87,25 @@ function downloadit(yazi,param){
 		link.download = param;
 		var blob = new Blob([yazi], {type: 'text/plain'});
 		link.href = window.URL.createObjectURL(blob);
-		
-		
 		link.click();
 }
 		
 function exportPublicKey(key) {
 	window.crypto.subtle.exportKey(
-		"spki", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 		key.publicKey //can be a publicKey or privateKey, as long as extractable was true
 	)
 	.then(function(keydata){
 		//returns the exported key data
 		//console.log("aaaaaaaaaaaaa"+keydata);
 		var result = {};
+		console.log(keydata);
 		result.publicKey = keydata;
 		result.key = key;
-		console.log(toPemPub(keydata));
+		//console.log(toPemPub(keydata));
 		
-		var sitring = toPemPub(keydata);
-		document.getElementById('downpub').onclick=function() {downloadit(toPemPub(keydata),'key.pub')};
-        /*var link = document.createElement('a');
-		link.download = 'key.pub';
-		var blob = new Blob([sitring], {type: 'text/plain'});
-		//link.href = window.URL.createObjectURL(blob);
-		var url = window.URL.createObjectURL(blob);
-		console.log(url);
-		link.click();*/
-        //console.log(keydata);
+		//var sitring = toPemPub(keydata);
+		//document.getElementById('downpub').onclick=function() {downloadit(toPemPub(keydata),'key.pub')};
 		// export private key
 		exportPrivateKey(result);
 	})
@@ -130,27 +118,20 @@ function exportPublicKey(key) {
 function exportPrivateKey(param) {
 	console.log(param);
 	window.crypto.subtle.exportKey(
-		"pkcs8", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 		param.key.privateKey //can be a publicKey or privateKey, as long as extractable was true
 	)
 	.then(function(keydata){
 		//returns the exported key data
 		//console.log(keydata);
 		var result = {};
+		console.log(keydata);
 		result.publicKey = JSON.stringify(param.publicKey);
 		result.privateKey = JSON.stringify(keydata);
 		result.key = param.key;
-		console.log(toPemPri(keydata));
-		document.getElementById('downpri').onclick=function(){downloadit(toPemPri(keydata),'key.pri')};
-		/*
-		var sitring=toPemPri(keydata);
-		var link = document.createElement('a');
-		link.download = 'key.pub';
-		var blob = new Blob([sitring], {type: 'text/plain'});
-		link.href = window.URL.createObjectURL(blob);
-		link.click();*/
-		//console.log(result.publicKey);
-		//console.log(result.privateKey);
+		//console.log(toPemPri(keydata));
+		//document.getElementById('downpri').onclick=function(){downloadit(toPemPri(keydata),'key.pri')};
+
 		// send public key to the server
 		owncloudSendPublicKey(result.publicKey,result.privateKey);
 	})
@@ -191,7 +172,7 @@ function createAndSaveAKeyPair() {
 	then(function (key) {
 	    keyPair = key;
 	    //kkkkk=key;
-	    //console.log(key);
+	    console.log(key);
 	    return key;
 	});
 
@@ -199,11 +180,13 @@ function createAndSaveAKeyPair() {
 
 function owncloudSendPublicKey(publicKey,privateKey) {
 	var http = new XMLHttpRequest();
-	var url = "http://144.122.120.17/owncloud/index.php/apps/endtoend/setPublicKey";
+	var url = "https://144.122.129.24/owncloud/index.php/apps/endtoend/setPublicKey";
+	console.log(publicKey);
+	console.log(privateKey);	
 
 	var data={};
 	data.key = publicKey;
-
+	
 	var string = JSON.stringify(data);
 
 	http.open('POST',url,true);

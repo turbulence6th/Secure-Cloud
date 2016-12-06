@@ -1,34 +1,9 @@
 // this fileId will be selected row id, it just for a test if it runs 
-var fileId  = 266;
+var fileId  = 325;
 
-var exportedPrivateKey,exportedPublicKey;
-var publicKey,privateKey;
+var exportedPrivateKey;
+var privateKey;
 
-
-
-// import public key
-function import_public_key(exportedPublicKey) {	
-	window.crypto.subtle.importKey(
-	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-	    exportedPublicKey,
-	    {   //these are the algorithm options
-		name: "RSA-OAEP",
-		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-	    },
-	    true, //whether the key is extractable (i.e. can be used in exportKey)
-	    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
-			//"decrypt" or "unwrapKey" for private key imports
-	)
-	.then(function(key){
-	    //returns a publicKey (or privateKey if you are importing a private key)
-	    //console.log(key);
-		publicKey = key;
-		
-	})
-	.catch(function(err){
-	    //console.error(err);
-	});
-}
 
 //import private key
 function import_private_key(exportedPrivateKey) {
@@ -69,22 +44,6 @@ chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
 
 });
 
-chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
-{
-    if(chrome.runtime.lastError)
-    {
-        /* error */
-
-        return;
-    }
-
-     exportedPublicKey = JSON.parse(data.SECURE_CLOUD_PUBLIC_KEY);
-	import_public_key(exportedPublicKey);
-
-
-});
-
-
 // save blob data to local disk
 var saveData = (function () {
     var a = document.createElement("a");
@@ -100,19 +59,33 @@ var saveData = (function () {
     };
 }());
 
+function base64ToArrayBuffer(b64) {
+    var byteString = window.atob(b64);
+    var byteArray = new Uint8Array(byteString.length);
+    for(var i=0; i < byteString.length; i++) {
+        byteArray[i] = byteString.charCodeAt(i);
+    }
+
+    return byteArray;
+}
+
 
 // download file function
 function downloadFile() {
 	$.ajax({	
-		url : 'https://144.122.120.17/owncloud/index.php/apps/endtoend/downloadFile',
+		url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/downloadFile',
 		data :  {
 			fileId : fileId
 		},
 		//dataType : 'json',
 		type : 'GET',
 		success : function(data) {
-			var file = new Blob([data], {type: "application/octet-stream"});
-			decryptTheFile(file,privateKey);
+
+			var file = new Blob([base64ToArrayBuffer(data.file)], {type: "application/octet-stream"});
+			var sessionKey = base64ToArrayBuffer(data.sessionKey);
+			var filename = data.fileName;
+			decryptTheFile(file,filename,privateKey,sessionKey);
+			
 
 
 		},
@@ -121,11 +94,12 @@ function downloadFile() {
 }
 
 
-function decryptTheFile(file,privateKey) {
+function decryptTheFile(file,filename,privateKey,sessionKey) {
     // Click handler. Reads the selected file, then decrypts it to
     // the random key pair's private key. Creates a Blob with the result,
   
-    var sourceFile = file;
+  	file = new File([file], "deneme", {type: "application/octet-stream" });
+    var sourceFile = file; 
     
     var reader = new FileReader();
     reader.onload = processTheFile;
@@ -142,11 +116,12 @@ function decryptTheFile(file,privateKey) {
     var encryptedKey    = new Uint8Array( data, 2,              keyLength);
     var iv              = new Uint8Array( data, 2 + keyLength,  16);
     var ciphertext      = new Uint8Array( data, 2 + keyLength + 16);
+    var encryptedKey = sessionKey;
 
     decrypt(ciphertext, iv, encryptedKey, privateKey).
     then(function(blob) {
          //return blob;
-         saveData(blob,"file");
+         saveData(blob,filename);
          
          }).
     catch(function(err) {
@@ -164,6 +139,7 @@ function decryptTheFile(file,privateKey) {
     
     function decryptKey(encryptedKey, privateKey) {
     console.log(encryptedKey);
+    console.log(privateKey);
     // Returns a Promise that yields a Uint8Array AES key.
     // encryptedKey is a Uint8Array, privateKey is the privateKey
     // property of a Key key pair.
