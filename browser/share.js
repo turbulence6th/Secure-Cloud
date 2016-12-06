@@ -1,6 +1,35 @@
 var exportedPrivateKey;
 var privateKey;
 
+
+// import public key
+function importPublicKey(exportedPublicKey) {	
+	return window.crypto.subtle.importKey(
+	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
+	    exportedPublicKey,
+	    {   //these are the algorithm options
+		name: "RSA-OAEP",
+		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
+	    },
+	    true, //whether the key is extractable (i.e. can be used in exportKey)
+	    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
+			//"decrypt" or "unwrapKey" for private key imports
+	)
+	.then(function(key){
+	    //returns a publicKey (or privateKey if you are importing a private key)
+	    //console.log(key);
+		publicKey = key;
+		console.log("imported public key");
+		console.log(publicKey);
+		return key;
+		
+	})
+	.catch(function(err){
+	    //console.error(err);
+	    console.log("bug");
+	});
+}
+
 //import private key
 function import_private_key(exportedPrivateKey) {
 	window.crypto.subtle.importKey(
@@ -62,6 +91,7 @@ function arrayBufferToBase64(arrayBuffer) {
 }
 
 function shareFile(fileId, username) {
+	var sessionKey,publicKey;
 	$.ajax({	
 		url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/preShareFile',
 		data :  {
@@ -72,9 +102,12 @@ function shareFile(fileId, username) {
 		type : 'POST',
 		success : function(data) {
 			if (data.success) {
-				publicKey = data.publicKey;
-				var sessionKey = base64ToArrayBuffer(data.sessionKey);
-				decryptSessionKey(sessionKey,privateKey).
+
+				publicKey = JSON.parse(data.publicKey);
+				sessionKey = base64ToArrayBuffer(data.sessionKey);
+				console.log(publicKey);
+				importPublicKey(publicKey).
+				then(decryptSessionKey).
 				then(encryptSessionKey).
 				then(shareFile);
 
@@ -87,13 +120,18 @@ function shareFile(fileId, username) {
 		async : true
 	});
 
-	function decryptSessionKey(encryptedKey, privateKey) {
+	function decryptSessionKey(key) {
+		console.log("public key decrypting");
+		publicKey = key;
+		console.log("imported public key");
+		console.log(publicKey);
     	// Returns a Promise that yields a Uint8Array AES key.
     	// encryptedKey is a Uint8Array, privateKey is the privateKey
     	// property of a Key key pair.
-    	return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
+    	return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, sessionKey);
     }
     function encryptSessionKey(exportedKey) {
+    	console.log("public key encrypting");
 		// Returns a Promise that yields an ArrayBuffer containing
 		// the encryption of the exportedKey provided as a parameter,
 		// using the publicKey found in an enclosing scope.
@@ -101,6 +139,8 @@ function shareFile(fileId, username) {
 	}
 
 	function shareFile(key) {
+		console.log("file sharing");
+		console.log(arrayBufferToBase64(key));
 		$.ajax({	
 		url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/shareFile',
 		data :  {
@@ -127,7 +167,7 @@ function shareFile(fileId, username) {
 
 
 
-var fileId = 288;
+var fileId = 325;
 var username = "user";
 
-document.getElementById("shareFile").addEventListener("click",function() {shareFile(fileId,username); });
+document.getElementById("share").addEventListener("click",function() {shareFile(fileId,username); });
