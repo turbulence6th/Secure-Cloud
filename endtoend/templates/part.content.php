@@ -6,5 +6,8 @@
 <button id="refresh">Refresh</button>
 
 <button id="deleteFile">Delete</button>
+<button id="share">Share</button>
 
 <div id="tree"></div>
+
+<?php p($_['users']) ?>

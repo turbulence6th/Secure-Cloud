@@ -24,6 +24,7 @@ use OCP\Files\IRootFolder;
 use OCP\Share\IManager;
 
 use OCA\EndToEnd\Db\PublicKeyDao;
+use OCA\EndToEnd\Db\EncryptedShareDao;
 use OCA\EndToEnd\Storage\FileStorage;
 
 class PageController extends Controller {
@@ -35,6 +36,7 @@ class PageController extends Controller {
 		$this->request = $request;
 		$this->userManager = $userManager;
 		$this->publicKeyDao = new PublicKeyDao($db);
+		$this->encryptedShareDao = new EncryptedShareDao($db);
 		$this->session = $session;
 		$this->rootFolder = $rootFolder;
 		$this->manager = $manager;
@@ -46,7 +48,7 @@ class PageController extends Controller {
 	 */
 	public function index() {
 		$user = $this->session->getLoginName();
-		$params = ['keys' => $this->publicKeyDao->find('user'), 'users' => $this->userManager->search('')];
+		$params = ['keys' => $this->publicKeyDao->find('user')];
 		return new TemplateResponse('endtoend', 'main', $params);
 	}
 
@@ -56,7 +58,7 @@ class PageController extends Controller {
 	 */
 	public function setPublicKey($key) {
 		$user = $this->session->getLoginName();
-		if(count($this->publicKeyDao->find($user)) > 0)	{
+		if($this->publicKeyDao->find($user))	{
 			return new DataResponse(['success' => false]);
 		}
 		
@@ -68,7 +70,7 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function fileUpload() {
+	public function fileUpload($encryptedKey) {
 		$user = $this->session->getLoginName();
 		$file = $this->request->getUploadedFile("file");
 		
@@ -77,7 +79,8 @@ class PageController extends Controller {
 		}
 		
 		$storage = new FileStorage($this->rootFolder->getUserFolder($user));
-		$storage->writeFile($file['name'], file_get_contents($file['tmp_name']));
+		$savedFile = $storage->writeFile($file['name'], file_get_contents($file['tmp_name']));
+		$this->encryptedShareDao->add($savedFile->getId(), $user, $encryptedKey);
 			
 		return new DataResponse(['success' => true]);
 	}
@@ -103,7 +106,9 @@ class PageController extends Controller {
 		$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
-		return new DataDownloadResponse($file->getContent(), $file->getName(), $file->getMimetype());
+		$encryptedShare = $this->encryptedShareDao->find_by_user($file->getId(), $user);
+		return new DataResponse(['fileName' => $file->getName(), 'file' => base64_encode($file->getContent()),
+			'sessionKey' => $encryptedShare['session_key']]);
 	}
 	
 	/**
@@ -117,21 +122,35 @@ class PageController extends Controller {
 		$file->delete();
 		return new DataResponse(['success' => true]);
 	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function preShareFile($fileId, $sharedWith) {
+		$user = $this->session->getLoginName();
+		$publicKey = $this->publicKeyDao->find($sharedWith);
+		$encryptedShare = $this->encryptedShareDao->find_by_user($fileId, $user);
+		return new DataResponse(['publicKey' => $publicKey['key'], 'sessionKey' => $encryptedShare['session_key'],
+			'success' => true]);
+	}
 
 	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function shareFile($fileId) {
+	public function shareFile($fileId, $sharedWith, $sessionKey) {
 		$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
 		$share = $this->manager->newShare();
 		$share->setNode($file);
-		$share->setShareType(\OCP\Share::SHARE_TYPE_LINK);
+		$share->setShareType(\OCP\Share::SHARE_TYPE_USER);
 		$share->setSharedBy($user);
 		$share->setPermissions(1);
+		$share->setSharedWith($sharedWith);
 		$this->manager->createShare($share);
+		$this->encryptedShareDao->add($fileId, $sharedWith, $sessionKey);
 		return new DataResponse(['success' => true]);
 	}
 	

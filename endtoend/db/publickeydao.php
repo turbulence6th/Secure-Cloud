@@ -17,13 +17,9 @@ class PublicKeyDao {
         $stmt->bindParam(1, $user_id);
         $stmt->execute();
 
-		$rows = array();
-        while($row = $stmt->fetch()) {
-        	array_push($rows, $row);
-        }
-
-        $stmt->closeCursor();
-        return $rows;
+		$row = $stmt->fetch();
+		$stmt->closeCursor();
+        return $row;
     }
 	
 	public function add($user_id, $key) {
@@ -33,5 +29,20 @@ class PublicKeyDao {
 		$stmt->bindParam(2, $key);
         $stmt->execute();
 	}
+	
+	public function deneme($id) {
+        $sql = 'SELECT * FROM *PREFIX*myapp_authors WHERE id = ?';
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(1, $id);
+        $stmt->execute();
+
+		$rows = array();
+        while($row = $stmt->fetch()) {
+        	array_push($rows, $row);
+        }
+
+        $stmt->closeCursor();
+        return $rows;
+    }
 
 }

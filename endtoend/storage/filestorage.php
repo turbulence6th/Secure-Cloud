@@ -18,5 +18,6 @@ class FileStorage {
         }
 
         $file->putContent($content);
+		return $file;
 	}
 }

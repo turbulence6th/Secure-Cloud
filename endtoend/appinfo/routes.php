@@ -25,5 +25,7 @@ return [
 	   ['name' => 'page#getFileTree', 'url' => '/getFileTree', 'verb' => 'GET'],
 	   ['name' => 'page#downloadFile', 'url' => '/downloadFile', 'verb' => 'GET'],
 	   ['name' => 'page#deleteFile', 'url' => '/deleteFile', 'verb' => 'POST'],
+	   ['name' => 'page#preShareFile', 'url' => '/preShareFile', 'verb' => 'POST'],
+	   ['name' => 'page#shareFile', 'url' => '/shareFile', 'verb' => 'POST'],
     ]
 ];

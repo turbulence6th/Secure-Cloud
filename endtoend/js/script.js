@@ -33,21 +33,6 @@
 			});
 		});
 		
-		$('#share').click(function() {
-			$.ajax({
-				url : OC.generateUrl('/apps/endtoend/shareFile'),
-				data : {
-					fileId: $('#tree').treeview('getSelected')[0].fileId
-				},
-				type : 'POST',
-				success : function(data) {
-					if(data.success){
-						refresh();
-					}
-				}
-			});
-		});
-
 		function refresh() {
 			$.ajax({
 				url : OC.generateUrl('/apps/endtoend/getFileTree'),
@@ -72,6 +57,7 @@
 		$('#refresh').click(refresh);
 		
 		refresh();
+		
 	});
 
 })(jQuery, OC);
