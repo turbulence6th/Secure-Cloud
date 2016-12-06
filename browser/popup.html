@@ -20,6 +20,13 @@
 		<div class="col-md-12">
 			<h4>Secure Cloud</h4>
 			<form class="form ">
+			    <span>Select encryption algorithm:</span><br>
+			    <select>
+                  <option value="algo1">RSASSA-PKCS1-v1_5</option>
+                  <option value="algo2">RSA-PSS</option>
+                  <option value="algo3" selected>RSA-OAEP</option>
+                  <option value="algo4">ECDSA</option>
+                </select>
 				<div class="form-group">
 					<button id="generate-key" type="button" class="btn btn-sm btn-success">Generate Key</button>
 				</div>
