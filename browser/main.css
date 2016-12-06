@@ -1,0 +1,35 @@
+.main-div{
+  width:400px;
+  height:300px;
+  background-color:#a6edf2;
+}
+
+#downpri{
+  display:none;
+}
+#uppri{
+  display:none;
+}
+#downpub{
+  display:none;
+}
+#uppub{
+  display:none;
+}
+#upload-key{
+  display:block;
+}
+#download-key{
+  display:block;
+}
+
+
+#file_operations{
+  display: none;
+}
+#upload_menu{
+  margin-top: 20px;
+}
+#file_operations{
+  margin-top: 20px;
+}
