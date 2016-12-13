@@ -1,5 +1,6 @@
+var url = window.location.origin;
 // this fileId will be selected row id, it just for a test if it runs 
-var fileId  = 325;
+var fileId  = 373;
 
 var exportedPrivateKey;
 var privateKey;
@@ -73,7 +74,7 @@ function base64ToArrayBuffer(b64) {
 // download file function
 function downloadFile() {
 	$.ajax({	
-		url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/downloadFile',
+		url : url + '/owncloud/index.php/apps/endtoend/downloadFile',
 		data :  {
 			fileId : fileId
 		},
