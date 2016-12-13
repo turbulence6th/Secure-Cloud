@@ -1,3 +1,4 @@
+var url = window.location.origin;
 
 // Fix Apple prefix if needed
 if (window.crypto && !window.crypto.subtle && window.crypto.webkitSubtle) {
@@ -96,7 +97,7 @@ function encryptTheFile(file,publicKey) {
 			formData.append('file',data.encryptedFile, file.name);
 			formData.append('encryptedKey', arrayBufferToBase64(data.encryptedKey));		
 			$.ajax({	
-				url : 'https://144.122.129.24/owncloud/index.php/apps/endtoend/fileUpload',
+				url : url + '/owncloud/index.php/apps/endtoend/fileUpload',
 				data : formData,
 				cache : false,
 				contentType : false,

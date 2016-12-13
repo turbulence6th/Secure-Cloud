@@ -1,3 +1,7 @@
+var hostname;
+chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
+    hostname = new URL(tabs[0].url).origin;
+});
 //CONVERT PEM FILEEEEEE
 function arrayBufferToBase64(arrayBuffer) {
     var byteArray = new Uint8Array(arrayBuffer);
@@ -179,8 +183,9 @@ function createAndSaveAKeyPair() {
 }
 
 function owncloudSendPublicKey(publicKey,privateKey) {
+
 	var http = new XMLHttpRequest();
-	var url = "https://144.122.129.24/owncloud/index.php/apps/endtoend/setPublicKey";
+	var url = hostname + "/owncloud/index.php/apps/endtoend/setPublicKey";
 	console.log(publicKey);
 	console.log(privateKey);	
 
