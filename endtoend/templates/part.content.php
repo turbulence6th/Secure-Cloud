@@ -7,6 +7,7 @@
 
 <button id="deleteFile">Delete</button>
 <button id="share">Share</button>
+<button id="unshare">Unshare</button>
 
 <div id="tree"></div>
 

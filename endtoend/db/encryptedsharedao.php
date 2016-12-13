@@ -45,6 +45,34 @@ class EncryptedShareDao {
 		$stmt->bindParam(2, $user_id);
 		$stmt->bindParam(3, $session_key);
         $stmt->execute();
+        $stmt->closeCursor();
+	}
+	
+	public function update($file_id, $user_id, $session_key) {
+		$sql = "UPDATE oc_encrypted_share SET session_key = ? WHERE file_id = ? AND user_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(1, $session_key);
+		$stmt->bindParam(2, $file_id);
+		$stmt->bindParam(3, $user_id);
+        $stmt->execute();
+		$stmt->closeCursor();
+	}
+	
+	public function delete($file_id) {
+		$sql = "DELETE FROM oc_encrypted_share WHERE file_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(1, $file_id);
+        $stmt->execute();
+		$stmt->closeCursor();
+	}
+	
+	public function delete_by_user($file_id, $user_id) {
+		$sql = "DELETE FROM oc_encrypted_share WHERE file_id = ? AND user_id = ?";
+        $stmt = $this->db->prepare($sql);
+        $stmt->bindParam(1, $file_id);
+		$stmt->bindParam(2, $user_id);
+        $stmt->execute();
+		$stmt->closeCursor();
 	}
 
 }

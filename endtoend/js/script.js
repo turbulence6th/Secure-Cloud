@@ -12,27 +12,6 @@
 
 	$(document).ready(function() {
 		
-		
-		//$('#downloadFile').click(function() {
-			//window.location=OC.generateUrl('/apps/endtoend/downloadFile') + "?fileId=" + 
-				//$('#tree').treeview('getSelected')[0].fileId;
-		//});
-		
-		$('#deleteFile').click(function() {
-			$.ajax({
-				url : OC.generateUrl('/apps/endtoend/deleteFile'),
-				data : {
-					fileId: $('#tree').treeview('getSelected')[0].fileId
-				},
-				type : 'POST',
-				success : function(data) {
-					if(data.success){
-						refresh();
-					}
-				}
-			});
-		});
-		
 		function refresh() {
 			$.ajax({
 				url : OC.generateUrl('/apps/endtoend/getFileTree'),

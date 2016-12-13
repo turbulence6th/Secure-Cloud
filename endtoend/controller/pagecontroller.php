@@ -22,6 +22,7 @@ use OCP\IUserSession;
 use OCP\IServerContainer;
 use OCP\Files\IRootFolder;
 use OCP\Share\IManager;
+use OCP\IGroupManager;
 
 use OCA\EndToEnd\Db\PublicKeyDao;
 use OCA\EndToEnd\Db\EncryptedShareDao;
@@ -30,7 +31,7 @@ use OCA\EndToEnd\Storage\FileStorage;
 class PageController extends Controller {
 
 	public function __construct($AppName, IRequest $request, IUserManager $userManager, IDBConnection $db, 
-		IUserSession $session, IRootFolder $rootFolder, IManager $manager){
+		IUserSession $session, IRootFolder $rootFolder, IManager $manager, IGroupManager $groupManager){
 			parent::__construct($AppName, $request, 'POST',
             	'Authorization, Content-Type, Accept', 1728000);
 		$this->request = $request;
@@ -40,6 +41,7 @@ class PageController extends Controller {
 		$this->session = $session;
 		$this->rootFolder = $rootFolder;
 		$this->manager = $manager;
+		$this->groupManager = $groupManager;
 	}
 
 	/**
@@ -48,7 +50,7 @@ class PageController extends Controller {
 	 */
 	public function index() {
 		$user = $this->session->getLoginName();
-		$params = ['keys' => $this->publicKeyDao->find('user')];
+		$params = ['keys' => ""];
 		return new TemplateResponse('endtoend', 'main', $params);
 	}
 
@@ -58,11 +60,19 @@ class PageController extends Controller {
 	 */
 	public function setPublicKey($key) {
 		$user = $this->session->getLoginName();
-		if($this->publicKeyDao->find($user))	{
-			return new DataResponse(['success' => false]);
+		
+		if(!$key) {
+			new DataResponse(['success' => false]);
 		}
 		
-		$this->publicKeyDao->add($user, $key);
+		if($this->publicKeyDao->find($user))	{
+			new DataResponse(['success' => false]);
+		}
+		
+		else {
+			$this->publicKeyDao->add($user, $key);
+		}
+		
 		return new DataResponse(['success' => true]);
 	}
 	
@@ -74,14 +84,21 @@ class PageController extends Controller {
 		$user = $this->session->getLoginName();
 		$file = $this->request->getUploadedFile("file");
 		
-		if(!$file) {
+		if(!$file || !$encryptedKey) {
 			return new DataResponse(['success' => false]);
 		}
 		
 		$storage = new FileStorage($this->rootFolder->getUserFolder($user));
 		$savedFile = $storage->writeFile($file['name'], file_get_contents($file['tmp_name']));
-		$this->encryptedShareDao->add($savedFile->getId(), $user, $encryptedKey);
-			
+		
+		if($this->encryptedShareDao->find_by_user($savedFile->getId(), $user)){
+			$this->encryptedShareDao->update($savedFile->getId(), $user, $encryptedKey);
+		}
+		
+		else {
+			$this->encryptedShareDao->add($savedFile->getId(), $user, $encryptedKey);
+		}
+		
 		return new DataResponse(['success' => true]);
 	}
 	
@@ -120,6 +137,7 @@ class PageController extends Controller {
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
 		$file->delete();
+		$this->encryptedShareDao->delete($fileId);
 		return new DataResponse(['success' => true]);
 	}
 	
@@ -131,7 +149,7 @@ class PageController extends Controller {
 		$user = $this->session->getLoginName();
 		$publicKey = $this->publicKeyDao->find($sharedWith);
 		$encryptedShare = $this->encryptedShareDao->find_by_user($fileId, $user);
-		return new DataResponse(['publicKey' => $publicKey['key'], 'sessionKey' => $encryptedShare['session_key'],
+		return new DataResponse(['publicKey' => $publicKey['public_key'], 'sessionKey' => $encryptedShare['session_key'],
 			'success' => true]);
 	}
 
@@ -153,6 +171,20 @@ class PageController extends Controller {
 		$this->encryptedShareDao->add($fileId, $sharedWith, $sessionKey);
 		return new DataResponse(['success' => true]);
 	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function unshareFile($fileId, $unsharedWith) {
+	 	$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		$share = $this->manager->getSharedWith($unsharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
+		$this->manager->deleteShare($share);
+		$this->encryptedShareDao->delete_by_user($fileId, $unsharedWith);
+		return new DataResponse(['success' => true]);
+	 }
 	
 	private function getFolderItems($tree, $folder) {
 		foreach($folder->getDirectoryListing() as $node) {
