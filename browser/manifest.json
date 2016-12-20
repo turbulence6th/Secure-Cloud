@@ -17,7 +17,8 @@
                                "encrypt.js",
                                "download.js",
                                "share.js",
-								"delete.js"
+								"delete.js",
+								"directory.js"
                                ],
                         "run_at": "document_end"
                         }

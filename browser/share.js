@@ -1,6 +1,5 @@
 var url = window.location.origin;
 
-
 var exportedPrivateKey;
 var privateKey;
 
@@ -93,13 +92,14 @@ function arrayBufferToBase64(arrayBuffer) {
     return b64;
 }
 
-function shareFile(fileId, username) {
+function shareFile(fileId, username,permissions) {
 	var sessionKey,publicKey;
 	$.ajax({	
 		url : url + '/owncloud/index.php/apps/endtoend/preShareFile',
 		data :  {
 			fileId : fileId,
-			sharedWith : username
+			sharedWith : username,
+			
 		},
 		//dataType : 'json',
 		type : 'POST',
@@ -144,26 +144,33 @@ function shareFile(fileId, username) {
 		console.log("file sharing");
 		console.log(arrayBufferToBase64(key));
 		$.ajax({	
-		url : url + '/owncloud/index.php/apps/endtoend/shareFile',
-		data :  {
-			fileId : fileId,
-			sharedWith : username,
-			sessionKey : arrayBufferToBase64(key)
-		},
-		//dataType : 'json',
-		type : 'POST',
-		success : function(data) {
-			if (data.success) {
+			url : url + '/owncloud/index.php/apps/endtoend/shareFile',
+			data :  {
+				fileId : fileId,
+				sharedWith : username,
+				sessionKey : arrayBufferToBase64(key),
+				read : permissions["read"],
+				update : permissions["update"],
+				create : permissions["create"],
+				delete : permissions["delete"],
+				share : permissions["share"],
+				changeShare : permissions["changeShare"]
+			},
+			//dataType : 'json',
+			type : 'POST',
+			success : function(data) {
+				if (data.success) {
 
-			}
+				}
 
-		},
-		async : true
-	});
+			},
+			async : true
+		});
 
 	}	
 
 }
+
 
 function unshareFile(fileId,username) {
 	$.ajax({	
@@ -186,10 +193,43 @@ function unshareFile(fileId,username) {
 }
 
 
+function changeShareFile(fileId,username,permissions) {
+	$.ajax({	
+		url : url + '/owncloud/index.php/apps/endtoend/changeShareFile',
+		data :  {
+			fileId : fileId,
+			sharedWith : username,
+			read : permissions["read"],
+			update : permissions["update"],
+			create : permissions["create"],
+			delete : permissions["delete"],
+			share : permissions["share"]
+		},
+		//dataType : 'json',
+		type : 'POST',
+		success : function(data) {
+			if (data.success) {
+
+			}
+
+		},
+		async : true
+	});
+}
 
 
-var fileId = 373;
+var fileId = 392;
 var username = "user";
+var permissions = {
 
-document.getElementById("share").addEventListener("click",function() {shareFile(fileId,username); });
+	"read" : true,
+	"update" : true,
+	"create" : false,
+	"delete" : false,
+	"share" : true,
+	"changeShare" : true
+};
+
+document.getElementById("share").addEventListener("click",function() {shareFile(fileId,username,permissions); });
 document.getElementById("unshare").addEventListener("click",function() {unshareFile(fileId,username); });
+document.getElementById("changeShare").addEventListener("click",function() {changeShareFile(fileId,username,permissions); });

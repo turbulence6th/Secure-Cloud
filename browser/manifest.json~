@@ -13,10 +13,15 @@
     "content_scripts": [{
                         "matches": ["<all_urls>"],
                         "js": [
+                                "jquery.js",
                                "encrypt.js",
-								"jquery.js"
-                               ]
-                        }],
+                               "download.js",
+                               "share.js",
+								"delete.js"
+                               ],
+                        "run_at": "document_end"
+                        }
+                        ],
     "permissions": [
 					"storage",
                     "activeTab",
