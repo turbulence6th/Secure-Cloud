@@ -21,6 +21,8 @@ use OCP\IDBConnection;
 use OCP\IUserSession;
 use OCP\IServerContainer;
 use OCP\Files\IRootFolder;
+use OCP\Files\File;
+use OCP\Files\Folder;
 use OCP\Share\IManager;
 use OCP\IGroupManager;
 
@@ -96,7 +98,7 @@ class PageController extends Controller {
 		}
 		
 		else {
-			$this->encryptedShareDao->add($savedFile->getId(), $user, $encryptedKey);
+			$this->encryptedShareDao->add_with_change_share($savedFile->getId(), $user, $encryptedKey, 1);
 		}
 		
 		return new DataResponse(['success' => true]);
@@ -157,7 +159,7 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function shareFile($fileId, $sharedWith, $sessionKey) {
+	public function shareFile($fileId, $sharedWith, $sessionKey, $read, $update, $create, $delete, $share, $changeShare) {
 		$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
@@ -165,10 +167,45 @@ class PageController extends Controller {
 		$share->setNode($file);
 		$share->setShareType(\OCP\Share::SHARE_TYPE_USER);
 		$share->setSharedBy($user);
-		$share->setPermissions(1);
+		$permission = 0;
+		$changeShared = 0;
+		
+		if($read == "true") {
+			$permission += \OCP\Constants::PERMISSION_READ;
+		}
+		
+		if($update == "true") {
+			$permission += \OCP\Constants::PERMISSION_UPDATE;
+		}
+		
+		if($create == "true") {
+			$permission += \OCP\Constants::PERMISSION_CREATE;
+		}
+		
+		if($delete == "true") {
+			$permission += \OCP\Constants::PERMISSION_DELETE;
+		}
+		
+		if($share == "true") {
+			$permission += \OCP\Constants::PERMISSION_SHARE;
+		}
+		
+		if($changeShare == "true") {
+			if($file instanceof File) {
+				$permission = 19;
+			}
+			
+			if($file instanceof Folder) {
+				$permission = 31;
+			}
+			
+			$changeShared = 1;
+		}
+		
+		$share->setPermissions($permission);
 		$share->setSharedWith($sharedWith);
 		$this->manager->createShare($share);
-		$this->encryptedShareDao->add($fileId, $sharedWith, $sessionKey);
+		$this->encryptedShareDao->add_with_change_share($fileId, $sharedWith, $sessionKey, $changeShared);
 		return new DataResponse(['success' => true]);
 	}
 	
@@ -183,6 +220,66 @@ class PageController extends Controller {
 		$share = $this->manager->getSharedWith($unsharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
 		$this->manager->deleteShare($share);
 		$this->encryptedShareDao->delete_by_user($fileId, $unsharedWith);
+		return new DataResponse(['success' => true]);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function changeShareFile($fileId, $sharedWith, $read, $update, $create, $delete, $share) {
+	 	$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		$encryptedShareUser = $this->encryptedShareDao->find_by_user($fileId, $user);
+		$encryptedShareWith = $this->encryptedShareDao->find_by_user($fileId, $sharedWith);
+		if($file->getOwner()->getUID() == $user || ($encryptedShareUser['change_share'] && !$encryptedShareWith['change_share'])) {
+			$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
+			$permission = 0;
+			if($read == "true") {
+				$permission += \OCP\Constants::PERMISSION_READ;
+			}
+			
+			if($update == "true") {
+				$permission += \OCP\Constants::PERMISSION_UPDATE;
+			}
+			
+			if($create == "true") {
+				$permission += \OCP\Constants::PERMISSION_CREATE;
+			}
+			
+			if($delete == "true") {
+				$permission += \OCP\Constants::PERMISSION_DELETE;
+			}
+			
+			if($share == "true") {
+				$permission += \OCP\Constants::PERMISSION_SHARE;
+			}
+			
+			$shareObj->setPermissions($permission);
+			$this->manager->updateShare($shareObj);
+			return new DataResponse(['success' => true]);
+		}
+		
+		return new DataResponse(['success' => false]);
+	 }
+
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function newDirectory($parentId, $folderName) {
+	 	$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		if($parentId == "false") {
+			$userFolder->newFolder($folderName);
+		}
+		
+		else {
+			$parentFolder = $userFolder->getById($parentId)[0];
+			$parentFolder->newFolder($folderName);
+		}
+		
 		return new DataResponse(['success' => true]);
 	 }
 	
