@@ -28,5 +28,7 @@ return [
 	   ['name' => 'page#preShareFile', 'url' => '/preShareFile', 'verb' => 'POST'],
 	   ['name' => 'page#shareFile', 'url' => '/shareFile', 'verb' => 'POST'],
 	   ['name' => 'page#unshareFile', 'url' => '/unshareFile', 'verb' => 'POST'],
+	   ['name' => 'page#changeShareFile', 'url' => '/changeShareFile', 'verb' => 'POST'],
+	   ['name' => 'page#newDirectory', 'url' => '/newDirectory', 'verb' => 'POST'],
     ]
 ];
