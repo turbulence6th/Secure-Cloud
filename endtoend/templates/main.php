@@ -1,10 +1,16 @@
 <?php
 script('endtoend', 'bootstrap');
 script('endtoend', 'bootstrap-treeview');
+script('endtoend', 'angular');
 script('endtoend', 'script');
+script('endtoend', 'forangular');
+script('endtoend', 'angular-tree-widget.min');
+script('endtoend', 'angular-animate.min');
+script('endtoend', 'angular-recursion');
 style('endtoend', 'bootstrap');
 style('endtoend', 'bootstrap-treeview');
 style('endtoend', 'style');
+style('endtoend', 'angular-tree-widget.min');
 ?>
 
 <div id="app">
