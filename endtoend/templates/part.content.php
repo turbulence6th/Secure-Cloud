@@ -55,7 +55,22 @@
 
   	</div>
 </div>
-
+<nav id="context-menu" class="context-menu">
+    <ul class="context-menu__items">
+      <li class="context-menu__item">
+        <a id="downloadFile" href="#" class="context-menu__link" data-action="Download"><i class="fa fa-eye"></i> Download</a>
+      </li>
+      <li class="context-menu__item">
+        <a id="deleteFile" href="#" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i> Delete</a>
+      </li>
+      <li class="context-menu__item">
+        <a id="share" href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> Share</a>
+      </li>
+      <li class="context-menu__item">
+        <a id="unshare" href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> UnShare</a>
+      </li>
+    </ul>
+  </nav>
 
 <div id="tree"></div>
 
