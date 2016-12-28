@@ -116,6 +116,18 @@ class PageController extends Controller {
 			
 		return new DataResponse($tree);
 	}
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function getFileTreeInterface() {
+		$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$tree = array();
+		$tree = $this->getFilesInterface($tree, $userFolder);
+			
+		return new DataResponse($tree);
+	}
 	
 	/**
 	 * @NoAdminRequired
@@ -297,6 +309,78 @@ class PageController extends Controller {
 					$object['icon'] = 'glyphicon glyphicon-picture';
 				}
 				
+				array_push($tree, $object);
+			}
+			
+		}
+		
+		return $tree;
+	}
+
+	private function getFilesInterface($tree, $folder) {
+		foreach($folder->getDirectoryListing() as $node) {
+			if($node->getMimetype() == "httpd/unix-directory") {
+				$nodes = array();
+				$nodes = $this->getFilesInterface($nodes, $node);
+				array_push($tree, array(name => $node->getName() ,children => $nodes, image => "apps/endtoend/img/img.png"));
+			}
+			
+			else {
+				$object = array(name => $node->getName(), fileId => $node->getId(), tags => [$this->getSize($node->getSize())]);
+				if($this->startsWith($node->getMimetype(), 'image')) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), 'text')) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/javascript")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/json")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/xml")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/x-shockwave")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "video/x-flv")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/zip")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/x-rar-compressed")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/x-msdownload")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "audio")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), 'video')) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/pdf")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/msword")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/rtf")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/vnd.ms-excel")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				if($this->startsWith($node->getMimetype(), "application/vnd.ms-powerpoint")) {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
+				else {
+					$object[image] = "apps/endtoend/img/img.png";
+				}
 				array_push($tree, $object);
 			}
 			
