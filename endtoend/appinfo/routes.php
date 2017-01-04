@@ -31,5 +31,11 @@ return [
 	   ['name' => 'page#unshareFile', 'url' => '/unshareFile', 'verb' => 'POST'],
 	   ['name' => 'page#changeShareFile', 'url' => '/changeShareFile', 'verb' => 'POST'],
 	   ['name' => 'page#newDirectory', 'url' => '/newDirectory', 'verb' => 'POST'],
+	   ['name' => 'page#createCryptoGroup', 'url' => '/createCryptoGroup', 'verb' => 'POST'],
+	   ['name' => 'page#preAddNewMemberToGroup', 'url' => '/preAddNewMemberToGroup', 'verb' => 'POST'],
+	   ['name' => 'page#addNewMemberToGroup', 'url' => '/addNewMemberToGroup', 'verb' => 'POST'],
+	   ['name' => 'page#leaveFromGroup', 'url' => '/leaveFromGroup', 'verb' => 'POST'],
+	   ['name' => 'page#preShareWithGroup', 'url' => '/preShareWithGroup', 'verb' => 'POST'],
+	   ['name' => 'page#shareWithGroup', 'url' => '/shareWithGroup', 'verb' => 'POST'],
     ]
 ];

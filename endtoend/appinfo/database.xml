@@ -2,7 +2,7 @@
 <database>
 	<name>*dbname*</name>
 	<create>true</create>
-	<overwrite>false</overwrite>
+	<overwrite>true</overwrite>
 	<charset>utf8</charset>
 	<table>
 		<name>oc_publickey</name>
@@ -41,7 +41,7 @@
 				<type>integer</type>
 			</field>
 			<field>
-				<name>user_id</name>
+				<name>model_id</name>
 				<type>text</type>
 			</field>
 			<field>
@@ -49,9 +49,38 @@
 				<type>clob</type>
 			</field>
 			<field>
+				<name>type</name>
+				<type>text</type>
+			</field>
+			<field>
 				<name>change_share</name>
 				<type>integer</type>
 				<default>0</default>
+			</field>
+		</declaration>
+	</table>
+	<table>
+		<name>oc_crypto_group</name>
+		<declaration>
+			<field>
+				<name>id</name>
+				<type>integer</type>
+				<default>0</default>
+				<notnull>true</notnull>
+				<autoincrement>1</autoincrement>
+				<length>4</length>
+			</field>
+			<field>
+				<name>group_id</name>
+				<type>text</type>
+			</field>
+			<field>
+				<name>user_id</name>
+				<type>text</type>
+			</field>
+			<field>
+				<name>group_secret</name>
+				<type>clob</type>
 			</field>
 		</declaration>
 	</table>

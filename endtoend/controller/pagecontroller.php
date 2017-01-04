@@ -28,6 +28,7 @@ use OCP\IGroupManager;
 
 use OCA\EndToEnd\Db\PublicKeyDao;
 use OCA\EndToEnd\Db\EncryptedShareDao;
+use OCA\EndToEnd\Db\CryptoGroupDao;
 use OCA\EndToEnd\Storage\FileStorage;
 
 class PageController extends Controller {
@@ -40,6 +41,7 @@ class PageController extends Controller {
 		$this->userManager = $userManager;
 		$this->publicKeyDao = new PublicKeyDao($db);
 		$this->encryptedShareDao = new EncryptedShareDao($db);
+		$this->cryptoGroupDao = new CryptoGroupDao($db);
 		$this->session = $session;
 		$this->rootFolder = $rootFolder;
 		$this->manager = $manager;
@@ -93,12 +95,12 @@ class PageController extends Controller {
 		$storage = new FileStorage($this->rootFolder->getUserFolder($user));
 		$savedFile = $storage->writeFile($file['name'], file_get_contents($file['tmp_name']));
 		
-		if($this->encryptedShareDao->find_by_user($savedFile->getId(), $user)){
-			$this->encryptedShareDao->update($savedFile->getId(), $user, $encryptedKey);
+		if($this->encryptedShareDao->find_by_model($savedFile->getId(), $user, 'user')){
+			$this->encryptedShareDao->update($savedFile->getId(), $user, $encryptedKey, 'user');
 		}
 		
 		else {
-			$this->encryptedShareDao->add_with_change_share($savedFile->getId(), $user, $encryptedKey, 1);
+			$this->encryptedShareDao->add_with_change_share($savedFile->getId(), $user, $encryptedKey, 1, 'user');
 		}
 		
 		return new DataResponse(['success' => true]);
@@ -137,9 +139,20 @@ class PageController extends Controller {
 		$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
-		$encryptedShare = $this->encryptedShareDao->find_by_user($file->getId(), $user);
-		return new DataResponse(['fileName' => $file->getName(), 'file' => base64_encode($file->getContent()),
-			'sessionKey' => $encryptedShare['session_key']]);
+		$encryptedShare = $this->encryptedShareDao->find_by_model($file->getId(), $user, 'user');
+		if($encryptedShare) {
+			return new DataResponse(['fileName' => $file->getName(), 'file' => base64_encode($file->getContent()),
+				'sessionKey' => $encryptedShare['session_key']]);
+		}
+		
+		foreach($this->groupManager->getUserGroupIds($this->session->getUser()) as $group) {
+			$encryptedShare = $this->encryptedShareDao->find_by_model($file->getId(), $group, 'group');
+			if ($encryptedShare) {
+				$cryptoGroup = $this->cryptoGroupDao->find($group, $user);
+				return new DataResponse(['fileName' => $file->getName(), 'file' => base64_encode($file->getContent()),
+					'sessionKey' => $encryptedShare['session_key'], 'secretKey' => $cryptoGroup['group_secret']]);
+			}
+		}
 	}
 	
 	/**
@@ -162,7 +175,7 @@ class PageController extends Controller {
 	public function preShareFile($fileId, $sharedWith) {
 		$user = $this->session->getLoginName();
 		$publicKey = $this->publicKeyDao->find($sharedWith);
-		$encryptedShare = $this->encryptedShareDao->find_by_user($fileId, $user);
+		$encryptedShare = $this->encryptedShareDao->find_by_model($fileId, $user, 'user');
 		return new DataResponse(['publicKey' => $publicKey['public_key'], 'sessionKey' => $encryptedShare['session_key'],
 			'success' => true]);
 	}
@@ -217,7 +230,7 @@ class PageController extends Controller {
 		$share->setPermissions($permission);
 		$share->setSharedWith($sharedWith);
 		$this->manager->createShare($share);
-		$this->encryptedShareDao->add_with_change_share($fileId, $sharedWith, $sessionKey, $changeShared);
+		$this->encryptedShareDao->add_with_change_share($fileId, $sharedWith, $sessionKey, $changeShared, 'user');
 		return new DataResponse(['success' => true]);
 	}
 	
@@ -231,7 +244,7 @@ class PageController extends Controller {
 		$file = $userFolder->getById($fileId)[0];
 		$share = $this->manager->getSharedWith($unsharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
 		$this->manager->deleteShare($share);
-		$this->encryptedShareDao->delete_by_user($fileId, $unsharedWith);
+		$this->encryptedShareDao->delete_by_model($fileId, $unsharedWith, 'user');
 		return new DataResponse(['success' => true]);
 	 }
 	 
@@ -243,8 +256,8 @@ class PageController extends Controller {
 	 	$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
-		$encryptedShareUser = $this->encryptedShareDao->find_by_user($fileId, $user);
-		$encryptedShareWith = $this->encryptedShareDao->find_by_user($fileId, $sharedWith);
+		$encryptedShareUser = $this->encryptedShareDao->find_by_model($fileId, $user, 'user');
+		$encryptedShareWith = $this->encryptedShareDao->find_by_model($fileId, $sharedWith, 'user');
 		if($file->getOwner()->getUID() == $user || ($encryptedShareUser['change_share'] && !$encryptedShareWith['change_share'])) {
 			$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
 			$permission = 0;
@@ -292,6 +305,128 @@ class PageController extends Controller {
 			$parentFolder->newFolder($folderName);
 		}
 		
+		return new DataResponse(['success' => true]);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function createCryptoGroup($groupName, $secretKey) {
+	 	$user = $this->session->getLoginName();
+		if($this->groupManager->groupExists($groupName)) {
+			return new DataResponse(['success' => false]);
+		}
+		
+	 	$group = $this->groupManager->createGroup($groupName);
+		$group->addUser($this->session->getUser());
+		$this->cryptoGroupDao->add($groupName, $user, $secretKey);
+		return new DataResponse(['success' => true]);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function preAddNewMemberToGroup($groupName, $username) {
+	 	$user = $this->session->getLoginName();
+		$cryptoGroup = $this->cryptoGroupDao->find($groupName, $user);
+		$publicKey = $this->publicKeyDao->find($username);
+		if ($cryptoGroup && $publicKey) {
+			return new DataResponse(['success' => true, 'secretKey' => $cryptoGroup['group_secret'], 
+				'publicKey' => $publicKey['public_key']]);
+		}
+		
+		else {
+			return new DataResponse(['success' => false]);
+		}
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function addNewMemberToGroup($groupName, $username, $secretKey) {
+	 	$group = $this->groupManager->get($groupName);
+		$group->addUser($this->userManager->get($username));
+		$this->cryptoGroupDao->add($groupName, $username, $secretKey);
+		return new DataResponse(['success' => true]);
+	 }
+	 
+	  /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function leaveFromGroup($groupName) {
+	 	$user = $this->session->getLoginName();
+		$group = $this->groupManager->get($groupName);
+		$group->removeUser($this->session->getUser());
+		$this->cryptoGroupDao->delete($groupName, $user);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function preShareWithGroup($fileId, $sharedWith) {
+	 	$user = $this->session->getLoginName();
+		$encryptedShare = $this->encryptedShareDao->find_by_model($fileId, $user, 'user');
+		$cryptoGroup = $this->cryptoGroupDao->find($sharedWith, $user);
+		return new DataResponse(['success' => true, 'sessionKey' => $encryptedShare['session_key'], 
+			'groupSecret' => $cryptoGroup['group_secret']]);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function shareWithGroup($fileId, $sharedWith, $encryptedSessionKey, $read, $update, $create, $delete, $share, $changeShare) {
+	 	$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		$share = $this->manager->newShare();
+		$share->setNode($file);
+		$share->setShareType(\OCP\Share::SHARE_TYPE_GROUP);
+		$share->setSharedBy($user);
+		$permission = 0;
+		$changeShared = 0;
+		
+		if($read == "true") {
+			$permission += \OCP\Constants::PERMISSION_READ;
+		}
+		
+		if($update == "true") {
+			$permission += \OCP\Constants::PERMISSION_UPDATE;
+		}
+		
+		if($create == "true") {
+			$permission += \OCP\Constants::PERMISSION_CREATE;
+		}
+		
+		if($delete == "true") {
+			$permission += \OCP\Constants::PERMISSION_DELETE;
+		}
+		
+		if($share == "true") {
+			$permission += \OCP\Constants::PERMISSION_SHARE;
+		}
+		
+		if($changeShare == "true") {
+			if($file instanceof File) {
+				$permission = 19;
+			}
+			
+			if($file instanceof Folder) {
+				$permission = 31;
+			}
+			
+			$changeShared = 1;
+		}
+		
+		$share->setPermissions($permission);
+		$share->setSharedWith($sharedWith);
+		$this->manager->createShare($share);
+		$this->encryptedShareDao->add_with_change_share($fileId, $sharedWith, $encryptedSessionKey, $changeShared, 'group');
 		return new DataResponse(['success' => true]);
 	 }
 	
