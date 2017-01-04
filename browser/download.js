@@ -1,74 +1,3 @@
-var url = window.location.origin;
-// this fileId will be selected row id, it just for a test if it runs 
-var fileId  = 392;
-
-var exportedPrivateKey;
-var privateKey;
-
-
-//import private key
-function import_private_key(exportedPrivateKey) {
-	window.crypto.subtle.importKey(
-	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-	    exportedPrivateKey,
-	    {   //these are the algorithm options
-		name: "RSA-OAEP",
-		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-	    },
-	    true, //whether the key is extractable (i.e. can be used in exportKey)
-	    ["decrypt"] //"encrypt" or "wrapKey" for public key import or
-			//"decrypt" or "unwrapKey" for private key imports
-	)
-	.then(function(key){
-	    //returns a publicKey (or privateKey if you are importing a private key)
-	    //console.log(publicKey);
-		privateKey = key;
-	})
-	.catch(function(err){
-	    //console.error(err);
-	});
-}
-
-
-chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
-{
-    if(chrome.runtime.lastError)
-    {
-        /* error */
-
-        return;
-    }
-
-     exportedPrivateKey = JSON.parse(data.SECURE_CLOUD_PRIVATE_KEY);
-     import_private_key(exportedPrivateKey);
-	
-
-});
-
-// save blob data to local disk
-var saveData = (function () {
-    var a = document.createElement("a");
-    document.body.appendChild(a);
-    a.style = "display: none";
-    return function (data, fileName) {
-        var blob = new Blob([data], {type: "application/octet-stream"}),
-            url = window.URL.createObjectURL(blob);
-        a.href = url;
-        a.download = fileName;
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
-}());
-
-function base64ToArrayBuffer(b64) {
-    var byteString = window.atob(b64);
-    var byteArray = new Uint8Array(byteString.length);
-    for(var i=0; i < byteString.length; i++) {
-        byteArray[i] = byteString.charCodeAt(i);
-    }
-
-    return byteArray;
-}
 
 
 // download file function
@@ -84,8 +13,9 @@ function downloadFile() {
 
 			var file = new Blob([base64ToArrayBuffer(data.file)], {type: "application/octet-stream"});
 			var sessionKey = base64ToArrayBuffer(data.sessionKey);
+            var secretKey = data.secretKey;
 			var filename = data.fileName;
-			decryptTheFile(file,filename,privateKey,sessionKey);
+			decryptTheFile(file,filename,privateKey,sessionKey,secretKey);
 			
 
 
@@ -94,8 +24,21 @@ function downloadFile() {
 	});	
 }
 
+// save blob data to local disk
+function saveData(data, fileName) {
+    var a = document.createElement("a");
+    document.body.appendChild(a);
+    a.style = "display: none";
+    var blob = new Blob([data], {type: "application/octet-stream"}),
+    url = window.URL.createObjectURL(blob);
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+ }
 
-function decryptTheFile(file,filename,privateKey,sessionKey) {
+
+function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
     // Click handler. Reads the selected file, then decrypts it to
     // the random key pair's private key. Creates a Blob with the result,
   
@@ -119,7 +62,7 @@ function decryptTheFile(file,filename,privateKey,sessionKey) {
     var ciphertext      = new Uint8Array( data, 2 + keyLength + 16);
     var encryptedKey = sessionKey;
 
-    decrypt(ciphertext, iv, encryptedKey, privateKey).
+    decrypt(ciphertext, iv, encryptedKey, privateKey,secretKey).
     then(function(blob) {
          //return blob;
          saveData(blob,filename);
@@ -130,26 +73,43 @@ function decryptTheFile(file,filename,privateKey,sessionKey) {
           });
     
     
-    function decrypt(ciphertext, iv, encryptedSessionKey, privateKey) {
+    function decrypt(ciphertext, iv, encryptedSessionKey, privateKey,secretKey) {
     // Returns a Promise the yields a Blob containing the decrypted ciphertext.
     console.log("decrypt");
-    return decryptKey(encryptedSessionKey, privateKey).
-    then(importSessionKey).
-    then(decryptCiphertext);
+    if (secretKey) {
+        secretKey = base64ToArrayBuffer(secretKey);
+        return decryptKey(secretKey,privateKey).
+            then(importSessionKey).
+            then(function(groupSecret) {return aesDecrypt(encryptedSessionKey, groupSecret);}).
+            then(importSessionKey).
+            then(decryptCiphertext);
+    } else {   
+        return decryptKey(encryptedSessionKey, privateKey).
+        then(importSessionKey).
+        then(decryptCiphertext);
+    }
     
     
+    function aesDecrypt(encryptedKey, aesKey) {
+    	return window.crypto.subtle.decrypt(
+		    {
+		        name: "AES-CBC",
+		        iv: iv, //The initialization vector you used to encrypt
+		    },
+		    aesKey, //from generateKey or importKey above
+		    encryptedKey //ArrayBuffer of the data
+		);
+    }
+
     function decryptKey(encryptedKey, privateKey) {
-    console.log(encryptedKey);
-    console.log(privateKey);
-    // Returns a Promise that yields a Uint8Array AES key.
-    // encryptedKey is a Uint8Array, privateKey is the privateKey
-    // property of a Key key pair.
-    return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
+        // Returns a Promise that yields a Uint8Array AES key.
+        // encryptedKey is a Uint8Array, privateKey is the privateKey
+        // property of a Key key pair.
+        return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
     }
     
     
     function importSessionKey(keyBytes) {
-    console.log("import session key");
     // Returns a Promise yielding an AES-CBC Key from the
     // Uint8Array of bytes it is given.
     

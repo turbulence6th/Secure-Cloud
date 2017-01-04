@@ -13,14 +13,22 @@
     "content_scripts": [{
                         "matches": ["<all_urls>"],
                         "js": [
-                                "jquery.js",
                                "encrypt.js",
                                "download.js",
                                "share.js",
 								"delete.js",
-								"directory.js"
+								"directory.js",
+                                "group.js"
                                ],
                         "run_at": "document_end"
+                        },
+                        {
+                            "matches": ["<all_urls>"],
+                        "js": [
+                                "jquery.js",
+                                "config.js"
+                               ],
+                        "run_at": "document_start"
                         }
                         ],
     "permissions": [
