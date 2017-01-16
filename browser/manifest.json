@@ -18,7 +18,8 @@
                                "share.js",
 								"delete.js",
 								"directory.js",
-                                "group.js"
+                                "group.js",
+                                "test.js"
                                ],
                         "run_at": "document_end"
                         },
@@ -27,9 +28,11 @@
                         "js": [
                                 "jquery.js",
                                 "config.js"
+
                                ],
                         "run_at": "document_start"
                         }
+
                         ],
     "permissions": [
 					"storage",

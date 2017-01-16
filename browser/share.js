@@ -51,20 +51,6 @@ function import_private_key(exportedPrivateKey) {
 }
 
 
-chrome.storage.sync.get("SECURE_CLOUD_PRIVATE_KEY", function(data)
-{
-    if(chrome.runtime.lastError)
-    {
-        /* error */
-
-        return;
-    }
-
-     exportedPrivateKey = JSON.parse(data.SECURE_CLOUD_PRIVATE_KEY);
-     import_private_key(exportedPrivateKey);
-	
-
-});
 
 
 
@@ -193,17 +179,6 @@ function changeShareFile(fileId,username,permissions) {
 	});
 }
 
-
-var username = "user";
-var permissions = {
-
-	"read" : true,
-	"update" : true,
-	"create" : false,
-	"delete" : false,
-	"share" : true,
-	"changeShare" : true
-};
 
 document.getElementById("share").addEventListener("click",function() {shareFile(fileId,username,permissions); });
 document.getElementById("unshare").addEventListener("click",function() {unshareFile(fileId,username); });

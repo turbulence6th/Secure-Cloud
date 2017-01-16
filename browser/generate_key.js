@@ -194,6 +194,8 @@ function owncloudSendPublicKey(publicKey,privateKey) {
 	
 	var string = JSON.stringify(data);
 
+	
+
 	http.open('POST',url,true);
 	http.setRequestHeader("Content-type", "application/json; charset=utf-8");
 

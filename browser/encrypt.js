@@ -10,8 +10,6 @@ alert("Your current browser does not support the Web Cryptography API! This page
 
 }
 
-var exportedPublicKey;
-var publicKey;
 
 
 // import public key
@@ -40,34 +38,6 @@ function import_public_key(exportedPublicKey) {
 	});
 }
 
-
-chrome.storage.sync.get("SECURE_CLOUD_PUBLIC_KEY", function(data)
-{
-    if(chrome.runtime.lastError)
-    {
-        /* error */
-
-        return;
-    }
-
-     exportedPublicKey = JSON.parse(data.SECURE_CLOUD_PUBLIC_KEY);
-     console.log(exportedPublicKey);
-	import_public_key(exportedPublicKey);
-
-
-});
-
-
-function arrayBufferToBase64(arrayBuffer) {
-    var byteArray = new Uint8Array(arrayBuffer);
-    var byteString = '';
-    for(var i=0; i < byteArray.byteLength; i++) {
-        byteString += String.fromCharCode(byteArray[i]);
-    }
-    var b64 = window.btoa(byteString);
-
-    return b64;
-}
 
 
 // Click handlers to encrypt or decrypt the given file:
@@ -103,9 +73,12 @@ function encryptTheFile(file,publicKey) {
 				contentType : false,
 				processData : false,
 				type : 'POST',
-				success : function(data) {
-					if(data.success){
-						refresh();
+				success : function(data2) {
+
+					console.log(data2);
+					if(data2.success){
+						fileId = data2.fileId;
+						console.log(data2.fileId);
 					}
 				}
 			});	
@@ -216,12 +189,12 @@ function packageResults(encryptedKey) {
 
 
 
-function uploadFile() {
+function uploadFile(file) {
 	
-
-	var file = document.getElementById('file').files[0];
 	console.log(publicKey);
 	encryptTheFile(file,publicKey);
 }
 
-document.getElementById("submitFile").addEventListener("click",uploadFile);
+var file = document.getElementById('file').files[0];
+
+document.getElementById("submitFile").addEventListener("click",function() { uploadFile(file) });

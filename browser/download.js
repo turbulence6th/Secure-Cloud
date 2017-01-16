@@ -1,7 +1,7 @@
 
 
 // download file function
-function downloadFile() {
+function downloadFile(fileId) {
 	$.ajax({	
 		url : url + '/owncloud/index.php/apps/endtoend/downloadFile',
 		data :  {
@@ -138,4 +138,4 @@ function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
 
 
 // bind the downloadFile button to download function
-document.getElementById("downloadFile").addEventListener("click",downloadFile);
+document.getElementById("downloadFile").addEventListener("click",function() {downloadFile(fileId)});
