@@ -162,7 +162,9 @@ function LeaveFromGroup(groupname) {
 }
 
 function encryptSessionKeyWithGroupSecret(groupSecret,sessionKey) {
-	var iv = window.crypto.getRandomValues(new Uint8Array(16));
+	//var iv = window.crypto.getRandomValues(new Uint8Array(16));
+	var iv = "2oGfnx23bDl4BHEbujwm2g==";
+	iv = base64ToArrayBuffer(iv);
 	return window.crypto.subtle.encrypt({name: "AES-CBC", iv: iv}, groupSecret, sessionKey);
 }
 

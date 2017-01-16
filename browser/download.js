@@ -91,10 +91,12 @@ function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
     
     
     function aesDecrypt(encryptedKey, aesKey) {
+    	var secretIV = "2oGfnx23bDl4BHEbujwm2g==";
+    	secretIV = base64ToArrayBuffer(secretIV);
     	return window.crypto.subtle.decrypt(
 		    {
 		        name: "AES-CBC",
-		        iv: iv, //The initialization vector you used to encrypt
+		        iv: secretIV, //The initialization vector you used to encrypt
 		    },
 		    aesKey, //from generateKey or importKey above
 		    encryptedKey //ArrayBuffer of the data
