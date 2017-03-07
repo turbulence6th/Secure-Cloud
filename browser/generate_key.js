@@ -185,7 +185,7 @@ function createAndSaveAKeyPair() {
 function owncloudSendPublicKey(publicKey,privateKey) {
 
 	var http = new XMLHttpRequest();
-	var url = hostname + "/owncloud/index.php/apps/endtoend/setPublicKey";
+	var url = hostname + "/index.php/apps/endtoend/setPublicKey";
 	console.log(publicKey);
 	console.log(privateKey);	
 
