@@ -8,7 +8,7 @@ var permissions = {
 	"share" : true,
 	"changeShare" : true
 };
-var groupname = "sharegroup";
+var groupname = "finalgroup";
 var groupPermissions = {
 
 	"read" : true,
@@ -19,9 +19,9 @@ var groupPermissions = {
 	"changeShare" : false
 };
 
-
+/*
 setTimeout(function() {
-     uploadFile(new File(["Secure Cloud End to End Security\n","Cengaverler"], "deneme.txt"));
+     uploadFile(new File(["Secure Cloud End to End Security\n","Cengaverler"], "finaldemo.txt"));
 }, 0);
 
 setTimeout(function() {
@@ -39,24 +39,28 @@ setTimeout(function() {
 setTimeout(function() {
 	shareFile(fileId,username,permissions);
 }, 16000);
+*/
 
-/*
+
 setTimeout(function() {
-     uploadFile(new File(["Secure Cloud End to End Security Share Group\n","Cengaverler"], "sharegroup.txt"));
-}, 20000);
+     uploadFile(new File(["Secure Cloud End to End Security Share Group\n","Cengaverler"], "finaldemogroup.txt"));
+}, 1000);
+
+
 
 setTimeout(function() {
 	createCryptoGroup(groupname);
-}, 24000);
+}, 5000);
 
 setTimeout(function() {
 	AddNewMemberToGroup(groupname,"user")
-}, 28000);
+}, 9000);
+
 
 setTimeout(function() {
-	ShareWithGroup(23,groupname,groupPermissions)
-}, 32000);
-*/
+	ShareWithGroup(fileId,groupname,groupPermissions)
+}, 13000);
+
 
 
 
