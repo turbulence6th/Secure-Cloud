@@ -16,6 +16,7 @@ function encryptSessionKey(exportedKey) {
 	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKey, exportedKey);
 }
 function encryptUserSessionKey(exportedKey,userPublicKey) {
+	console.log("encrypt user session key")
 	console.log(exportedKey);
 	// Returns a Promise that yields an ArrayBuffer containing
 	// the encryption of the exportedKey provided as a parameter,
@@ -59,6 +60,10 @@ function decryptKey(encryptedKey, privateKey) {
     // Returns a Promise that yields a Uint8Array AES key.
     // encryptedKey is a Uint8Array, privateKey is the privateKey
     // property of a Key key pair.
+    console.log("decrypt key");
+    console.log(privateKey);
+    console.log(encryptedKey);
+
     return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
 }
 
@@ -106,8 +111,10 @@ function AddNewMemberToGroup(groupname, username) {
 				    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
 						//"decrypt" or "unwrapKey" for private key imports
 				).
-				then(function(data) { userPublicKey = data; return decryptKey(encryptedSecret,privateKey)}).
-				then(function(data) {return encryptUserSessionKey(data,userPublicKey)}).
+				then(function(data2) {
+				 	userPublicKey = data2; return decryptKey(encryptedSecret,privateKey)}).
+				then(function(data3) {
+					return encryptUserSessionKey(data3,userPublicKey)}).
 				then(AddNewMemberToGroupRequest);
 
 			}
@@ -163,9 +170,9 @@ function LeaveFromGroup(groupname) {
 
 function encryptSessionKeyWithGroupSecret(groupSecret,sessionKey) {
 	//var iv = window.crypto.getRandomValues(new Uint8Array(16));
-	var iv = "2oGfnx23bDl4BHEbujwm2g==";
-	iv = base64ToArrayBuffer(iv);
-	return window.crypto.subtle.encrypt({name: "AES-CBC", iv: iv}, groupSecret, sessionKey);
+	var siv = "2oGfnx23bDl4BHEbujwm2g==";
+	siv = base64ToArrayBuffer(siv);
+	return window.crypto.subtle.encrypt({name: "AES-CBC", iv: siv}, groupSecret, sessionKey);
 }
 
 function ShareWithGroup(fileId, groupname,permissions) {
@@ -228,16 +235,6 @@ function ShareWithGroup(fileId, groupname,permissions) {
 }
 
 
-var groupname = "denemegroup5";
-var groupPermissions = {
-
-	"read" : true,
-	"update" : true,
-	"create" : false,
-	"delete" : false,
-	"share" : false,
-	"changeShare" : false
-};
 
 //createCryptoGroup(groupname);
 //AddNewMemberToGroup(groupname,"user");

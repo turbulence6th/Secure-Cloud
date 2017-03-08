@@ -67,18 +67,15 @@ function encryptTheFile(file,publicKey) {
 			formData.append('file',data.encryptedFile, file.name);
 			formData.append('encryptedKey', arrayBufferToBase64(data.encryptedKey));		
 			$.ajax({	
-				url : url + '/owncloud/index.php/apps/endtoend/fileUpload',
+				url : url + '/index.php/apps/endtoend/fileUpload',
 				data : formData,
 				cache : false,
 				contentType : false,
 				processData : false,
 				type : 'POST',
-				success : function(data2) {
-
-					console.log(data2);
-					if(data2.success){
-						fileId = data2.fileId;
-						console.log(data2.fileId);
+				success : function(data) {
+					if(data.success){
+						location.reload();
 					}
 				}
 			});	
@@ -185,16 +182,8 @@ function packageResults(encryptedKey) {
 } // end of encryptTheFile click handler
                         
 
-            
-
-
-
 function uploadFile(file) {
 	
 	console.log(publicKey);
 	encryptTheFile(file,publicKey);
 }
-
-var file = document.getElementById('file').files[0];
-
-document.getElementById("submitFile").addEventListener("click",function() { uploadFile(file) });

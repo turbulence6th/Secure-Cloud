@@ -1,12 +1,8 @@
-
-var folderName = "ChildFolder";
-var parentId = 396;
-
 var url = window.location.origin;
 
-function newDirectory(name) {
+function newDirectory(folderName, parentId) {
 	$.ajax({
-		url : url + '/owncloud/index.php/apps/endtoend/newDirectory',
+		url : url + '/index.php/apps/endtoend/newDirectory',
 		data : {
 			folderName : folderName,
 			parentId : parentId
@@ -14,10 +10,8 @@ function newDirectory(name) {
 		type : 'POST',
 		success : function(data) {
 			if(data.success){
-				console.log("The folder has successfully created");
+				$("#jsGrid").jsGrid("refresh");
 			}
 		}
 	});
 }
-
-document.getElementById("newDirectory").addEventListener("click",function() {newDirectory(folderName,parentId); });

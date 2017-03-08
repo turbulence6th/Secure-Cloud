@@ -62,6 +62,3 @@ setTimeout(function() {
 }, 13000);
 
 
-
-
-
