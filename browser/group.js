@@ -175,7 +175,7 @@ function encryptSessionKeyWithGroupSecret(groupSecret,sessionKey) {
 	return window.crypto.subtle.encrypt({name: "AES-CBC", iv: siv}, groupSecret, sessionKey);
 }
 
-function ShareWithGroup(fileId, groupname,permissions) {
+function ShareWithGroup(fileId, groupname) {
 
 	var sessionKey,publicKey;
 	$.ajax({	
@@ -209,14 +209,7 @@ function ShareWithGroup(fileId, groupname,permissions) {
 			data :  {
 				fileId : fileId,
 				sharedWith : groupname,
-				encryptedSessionKey : arrayBufferToBase64(encryptedSessionKey),
-				read : permissions["read"],
-				update : permissions["update"],
-				create : permissions["create"],
-				delete : permissions["delete"],
-				share : permissions["share"],
-				changeShare : permissions["changeShare"]
-	
+				encryptedSessionKey : arrayBufferToBase64(encryptedSessionKey)
 			},
 			//dataType : 'json',
 			type : 'POST',

@@ -104,6 +104,7 @@ window.onload = function(){
                         $("#shared-users").html("");
                         $("#cryptopanel").removeClass("col-md-12");
                         $("#cryptopanel").addClass("col-md-8");
+                        $(".cryptoTabs").removeClass("selected");
                         $("#cryptosidebar").removeClass("hidden");
                         $("#cryptosidebar").addClass("visible");
                         $("#filename").html(arg.item.Name);
@@ -186,7 +187,7 @@ function getShareInfo(fileId) {
                         if (data[i]['type'] == "user")
                             info = "<div class='avatar'>" + data[i]['name'][0].toUpperCase() + "</div> Shared with you by " + data[i]['name'];
                         else
-                            info = "<div class='avatar'>" + data[i]['name'][0].toUpperCase() +"</div><p>Shared with you and the group " + data[i]['sharedWith'] + " by " + data[i]['name'];
+                            info = "<div class='avatar'>" + data[i]['name'][0].toUpperCase() +"</div> Shared with you and the group " + data[i]['sharedWith'] + " by " + data[i]['name'];
                         $("#sharesBy").html(info);
                     }
                     else {                   
@@ -247,7 +248,12 @@ $( "#inputShare" ).autocomplete({
       },
       minLength: 2,
       select: function( event, ui ) {
-        ui.item.value;
+        console.log(ui.item.value);
+        if (ui.item.value.includes("(group)") ) {
+            ShareWithGroup(fileid,ui.item.value.replace("(group)",""));
+        } else {
+            shareFile(fileid, ui.item.value);
+        }
       }
 });
 

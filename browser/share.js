@@ -54,7 +54,7 @@ function import_private_key(exportedPrivateKey) {
 
 
 
-function shareFile(fileId, username,permissions) {
+function shareFile(fileId, username) {
 	var sessionKey,publicKey;
 	$.ajax({	
 		url : url + '/owncloud/index.php/apps/endtoend/preShareFile',
@@ -73,7 +73,7 @@ function shareFile(fileId, username,permissions) {
 				importPublicKey(publicKey).
 				then(decryptSessionKey).
 				then(encryptSessionKey).
-				then(shareFile);
+				then(postShareFile);
 
 			}
 			
@@ -102,7 +102,7 @@ function shareFile(fileId, username,permissions) {
 		return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKey, exportedKey);
 	}
 
-	function shareFile(key) {
+	function postShareFile(key) {
 		console.log("file sharing");
 		console.log(arrayBufferToBase64(key));
 		$.ajax({	
@@ -110,13 +110,7 @@ function shareFile(fileId, username,permissions) {
 			data :  {
 				fileId : fileId,
 				sharedWith : username,
-				sessionKey : arrayBufferToBase64(key),
-				read : permissions["read"],
-				update : permissions["update"],
-				create : permissions["create"],
-				delete : permissions["delete"],
-				share : permissions["share"],
-				changeShare : permissions["changeShare"]
+				sessionKey : arrayBufferToBase64(key)
 			},
 			//dataType : 'json',
 			type : 'POST',
@@ -179,7 +173,3 @@ function changeShareFile(fileId,username,permissions) {
 	});
 }
 
-
-document.getElementById("share").addEventListener("click",function() {shareFile(fileId,username,permissions); });
-document.getElementById("unshare").addEventListener("click",function() {unshareFile(fileId,username); });
-document.getElementById("changeShare").addEventListener("click",function() {changeShareFile(fileId,username,permissions); });
