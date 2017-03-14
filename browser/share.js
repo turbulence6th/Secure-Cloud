@@ -57,7 +57,7 @@ function import_private_key(exportedPrivateKey) {
 function shareFile(fileId, username) {
 	var sessionKey,publicKey;
 	$.ajax({	
-		url : url + '/owncloud/index.php/apps/endtoend/preShareFile',
+		url : url + '/index.php/apps/endtoend/preShareFile',
 		data :  {
 			fileId : fileId,
 			sharedWith : username,
@@ -106,7 +106,7 @@ function shareFile(fileId, username) {
 		console.log("file sharing");
 		console.log(arrayBufferToBase64(key));
 		$.ajax({	
-			url : url + '/owncloud/index.php/apps/endtoend/shareFile',
+			url : url + '/index.php/apps/endtoend/shareFile',
 			data :  {
 				fileId : fileId,
 				sharedWith : username,
@@ -131,7 +131,7 @@ function shareFile(fileId, username) {
 function unshareFile(fileId,username) {
 	$.ajax({	
 
-			url :  url + '/owncloud/index.php/apps/endtoend/unshareFile',
+			url :  url + '/index.php/apps/endtoend/unshareFile',
 			data :  {
 				fileId : fileId,
 				unsharedWith : username

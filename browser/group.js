@@ -179,7 +179,7 @@ function ShareWithGroup(fileId, groupname) {
 
 	var sessionKey,publicKey;
 	$.ajax({	
-		url : url + '/owncloud/index.php/apps/endtoend/preShareWithGroup',
+		url : url + '/index.php/apps/endtoend/preShareWithGroup',
 		data :  {
 			fileId : fileId,
 			sharedWith : groupname,
@@ -205,7 +205,7 @@ function ShareWithGroup(fileId, groupname) {
 
 	function ShareWithGroupRequest(encryptedSessionKey) {
 		$.ajax({	
-			url : url + '/owncloud/index.php/apps/endtoend/shareWithGroup',
+			url : url + '/index.php/apps/endtoend/shareWithGroup',
 			data :  {
 				fileId : fileId,
 				sharedWith : groupname,
