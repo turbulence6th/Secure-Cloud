@@ -157,7 +157,7 @@ function unshareFile(fileId,username) {
 
 function changeShareFile(fileId,username,permissions) {
 	$.ajax({	
-		url : url + '/owncloud/index.php/apps/endtoend/changeShareFile',
+		url : url + '/index.php/apps/endtoend/changeShareFile',
 		data :  {
 			fileId : fileId,
 			sharedWith : username,

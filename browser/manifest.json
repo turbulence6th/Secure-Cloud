@@ -28,6 +28,7 @@
 								"directory.js",
                                 "group.js",
                                 "jquery.js",
+                                "jqueryui.js",
                                 "config.js",
                                 "jsgrid.min.js"
                                ],
