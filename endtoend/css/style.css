@@ -123,3 +123,59 @@ h3 {
 .code-example3 {
     height: 120px;
 }
+
+/*****************************************************/
+#cryptosidebar {
+	border-left: 1px solid;
+	border-left-color: #2fc18e; 
+}
+
+#app-content-wrapper {
+	display: flex;
+}
+
+#closecryptosidebar {
+	float:right; 
+	#margin-right: 6px; 
+	#margin-top: 6px;
+}
+
+.cryptoTabHeader > .cryptoTabs {
+	float: left;
+	cursor: pointer;
+	padding: 5px;
+}
+
+.cryptoTabHeader .cryptoTabs.selected, .cryptoTabHeader .cryptoTabs:hover {
+    border-bottom: 1px solid #333;
+}
+
+.cryptoTabHeader .cryptoTabs.selected {
+    font-weight: 600;
+}
+.cryptoTabHeader .cryptoTabs, .cryptoTabHeader .cryptoTabs span {
+    color: #888;
+}
+
+#cryptofileinfo {
+	display: flex;
+	margin: 4px;
+}
+
+.avatar {
+	height: 32px;
+    width: 32px;
+    background-color: rgb(139, 116, 231);
+    color: rgb(255, 255, 255);
+    font-weight: normal;
+    text-align: center;
+    line-height: 32px;
+    font-size: 17.6px;
+	border-radius: 50%;
+	margin-right: 8px;
+    display: inline-block;
+    overflow: hidden;
+    vertical-align: middle;
+    width: 32px;
+    height: 32px;
+}

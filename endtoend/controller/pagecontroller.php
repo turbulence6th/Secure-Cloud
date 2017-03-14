@@ -52,12 +52,105 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function index() {
+	public function index($folderId) {
 		$user = $this->session->getLoginName();
-		$params = ['keys' => ""];
+		$params = ['files' => $this->rootFolder->getUserFolder($user), 'json' => $folderId];
 		return new TemplateResponse('endtoend', 'main', $params);
 	}
-
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function nameAutocomplete($fileId, $term) {
+	 	$me = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($me);
+		$file = $userFolder->getById($fileId)[0];
+	 	$users = $this->userManager->search($term);
+		$groups = $this->groupManager->search($term);
+		$response = array();
+		$userShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_USER, $file);
+		
+		foreach($users as $user) {
+			$pass = false;
+			foreach($userShares as $share) {
+				if($share->getSharedWith() == $user) {
+					$pass = true;
+				}
+			}
+			
+			if(!pass)
+				array_push($response, $user->getUID());
+		}
+		foreach($groups as $group) {
+			array_push($response, $group->getGID() . "(group)");
+		}
+		
+		return new DataResponse($response);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function sharedUsersAndGroups($fileId) {
+	 	$user = $this->session->getLoginName();
+		$userFolder = $this->rootFolder->getUserFolder($user);
+		$file = $userFolder->getById($fileId)[0];
+		if ($file) {
+			$response = array();
+		 	$userShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_USER, $file);
+			$groupShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_GROUP, $file);
+			foreach($userShares as $share) {
+				array_push($response, array("name" => $share->getSharedWith(), "type" => "user", 
+					"property" => "sharedWith", "permissions" => $share->getPermissions(), 
+					"isFolder" => $file instanceof Folder));
+			}
+			foreach($groupShares as $share) {
+				array_push($response, array("name" => $share->getSharedWith(), "type" => "group",
+					"property" => "sharedWith", "permissions" => $share->getPermissions(),
+					"isFolder" => $file instanceof Folder));;
+			}	
+			
+			$userShared = $this->manager->getSharedWith($user, \OCP\Share::SHARE_TYPE_USER, $file);
+			$groupShared = $this->manager->getSharedWith($user, \OCP\Share::SHARE_TYPE_GROUP, $file);
+			foreach($userShared as $share) {
+				array_push($response, array("name" => $share->getSharedBy(), "type" => "user", 
+					"property" => "sharesBy"));
+			}
+			foreach($groupShared as $share) {
+				array_push($response, array("name" => $share->getSharedBy(), "type" => "group",
+					"property" => "sharesBy", "sharedWith" => $share->getSharedWith()));;
+			}		
+			return new DataResponse(array("data" => $response, "success" => true));
+		}
+		
+	 }
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function getFolder($folderId) {
+		$user = $this->session->getLoginName();
+		$response = array();
+		if ($folderId) {
+			$folder = $this->rootFolder->getUserFolder($user)->getById($folderId)[0];
+		}
+		
+		else {
+			$folder = $this->rootFolder->getUserFolder($user);
+		}
+		
+		foreach($folder->getDirectoryListing() as $node) {
+			array_push($response, array('id' => $node->getId(), 'Name' => $node->getName(),
+				'Size' => $this->getSize($node->getSize()), 'Modified' => gmdate("d.m.Y H:i:s", $node->getMTime()), 'Mime' => $node->getMimeType()));
+		}
+	
+		return new DataResponse($response);
+	}
+	
+	
 	/**
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
@@ -66,11 +159,11 @@ class PageController extends Controller {
 		$user = $this->session->getLoginName();
 		
 		if(!$key) {
-			new DataResponse(['success' => false]);
+			return new DataResponse(['success' => false]);
 		}
 		
 		if($this->publicKeyDao->find($user))	{
-			new DataResponse(['success' => false]);
+			return new DataResponse(['success' => false]);
 		}
 		
 		else {
@@ -104,31 +197,6 @@ class PageController extends Controller {
 		}
 		
 		return new DataResponse(['success' => true]);
-	}
-	
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 */
-	public function getFileTree() {
-		$user = $this->session->getLoginName();
-		$userFolder = $this->rootFolder->getUserFolder($user);
-		$tree = array();
-		$tree = $this->getFolderItems($tree, $userFolder);
-			
-		return new DataResponse($tree);
-	}
-	/**
-	 * @NoAdminRequired
-	 * @NoCSRFRequired
-	 */
-	public function getFileTreeInterface() {
-		$user = $this->session->getLoginName();
-		$userFolder = $this->rootFolder->getUserFolder($user);
-		$tree = array();
-		$tree = $this->getFilesInterface($tree, $userFolder);
-			
-		return new DataResponse($tree);
 	}
 	
 	/**
@@ -252,36 +320,18 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	 public function changeShareFile($fileId, $sharedWith, $read, $update, $create, $delete, $share) {
+	 public function changeShareFile($fileId, $sharedWith, $type, $permissions) {
 	 	$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
 		$encryptedShareUser = $this->encryptedShareDao->find_by_model($fileId, $user, 'user');
 		$encryptedShareWith = $this->encryptedShareDao->find_by_model($fileId, $sharedWith, 'user');
 		if($file->getOwner()->getUID() == $user || ($encryptedShareUser['change_share'] && !$encryptedShareWith['change_share'])) {
-			$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
-			$permission = 0;
-			if($read == "true") {
-				$permission += \OCP\Constants::PERMISSION_READ;
-			}
-			
-			if($update == "true") {
-				$permission += \OCP\Constants::PERMISSION_UPDATE;
-			}
-			
-			if($create == "true") {
-				$permission += \OCP\Constants::PERMISSION_CREATE;
-			}
-			
-			if($delete == "true") {
-				$permission += \OCP\Constants::PERMISSION_DELETE;
-			}
-			
-			if($share == "true") {
-				$permission += \OCP\Constants::PERMISSION_SHARE;
-			}
-			
-			$shareObj->setPermissions($permission);
+			if($type=="user")
+				$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
+			else if($type=="group")
+				$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_GROUP, $file)[0];
+			$shareObj->setPermissions($permissions);
 			$this->manager->updateShare($shareObj);
 			return new DataResponse(['success' => true]);
 		}
@@ -296,7 +346,7 @@ class PageController extends Controller {
 	 public function newDirectory($parentId, $folderName) {
 	 	$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
-		if($parentId == "false") {
+		if(!$parentId) {
 			$userFolder->newFolder($folderName);
 		}
 		
@@ -430,100 +480,6 @@ class PageController extends Controller {
 		return new DataResponse(['success' => true]);
 	 }
 	
-	private function getFolderItems($tree, $folder) {
-		foreach($folder->getDirectoryListing() as $node) {
-			if($node->getMimetype() == "httpd/unix-directory") {
-				$nodes = array();
-				$nodes = $this->getFolderItems($nodes, $node);
-				array_push($tree, array('text' => $node->getName() ,'nodes' => $nodes, 'selectable' => false));
-			}
-			
-			else {
-				$object = array('text' => $node->getName(), 'fileId' => $node->getId(), 'tags' => [$this->getSize($node->getSize())]);
-				if($this->startsWith($node->getMimetype(), 'image')) {
-					$object['icon'] = 'glyphicon glyphicon-picture';
-				}
-				
-				array_push($tree, $object);
-			}
-			
-		}
-		
-		return $tree;
-	}
-
-	private function getFilesInterface($tree, $folder) {
-		foreach($folder->getDirectoryListing() as $node) {
-			if($node->getMimetype() == "httpd/unix-directory") {
-				$nodes = array();
-				$nodes = $this->getFilesInterface($nodes, $node);
-				array_push($tree, array(name => $node->getName() ,children => $nodes, image => "apps/endtoend/img/img.png"));
-			}
-			
-			else {
-				$object = array(name => $node->getName(), fileId => $node->getId(), tags => [$this->getSize($node->getSize())]);
-				if($this->startsWith($node->getMimetype(), 'image')) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), 'text')) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/javascript")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/json")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/xml")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/x-shockwave")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "video/x-flv")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/zip")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/x-rar-compressed")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/x-msdownload")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "audio")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), 'video')) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/pdf")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/msword")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/rtf")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/vnd.ms-excel")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				if($this->startsWith($node->getMimetype(), "application/vnd.ms-powerpoint")) {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				else {
-					$object[image] = "apps/endtoend/img/img.png";
-				}
-				array_push($tree, $object);
-			}
-			
-		}
-		
-		return $tree;
-	}
-	
 	private function startsWith($haystack, $needle) {
 	     $length = strlen($needle);
 	     return (substr($haystack, 0, $length) === $needle);
@@ -531,21 +487,21 @@ class PageController extends Controller {
 	
 	private function getSize($byte) {
 		if($byte < 1024) {
-			return round($byte) . "b";
+			return round($byte) . " B";
 		}
 		
 		$byte = $byte / 1024;
 		if($byte < 1024) {
-			return round($byte) . "kb";
+			return round($byte) . " KB";
 		}
 		
 		$byte = $byte / 1024;
 		if($byte < 1024) {
-			return round($byte) . "mb";
+			return round($byte) . " MB";
 		}
 		
 		$byte = $byte / 1024;
-		return round($byte) . "gb";
+		return round($byte) . " GB";
 	}
 	
 }

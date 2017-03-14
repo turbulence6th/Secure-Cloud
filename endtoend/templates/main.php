@@ -1,17 +1,16 @@
 <?php
 script('endtoend', 'bootstrap');
 script('endtoend', 'bootstrap-treeview');
-script('endtoend', 'angular');
+script('endtoend', 'jsgrid.min');
 script('endtoend', 'script');
 
-script('endtoend', 'angular-tree-widget.min');
-script('endtoend', 'angular-animate.min');
-script('endtoend', 'angular-recursion');
-script('endtoend', 'controller');
 style('endtoend', 'bootstrap');
 style('endtoend', 'bootstrap-treeview');
+style('endtoend', 'jsgrid.min');
+style('endtoend', 'jsgrid-theme.min');
+style('endtoend', 'font-awesome.min');
 style('endtoend', 'style');
-style('endtoend', 'angular-tree-widget.min');
+
 ?>
 
 <div id="app">

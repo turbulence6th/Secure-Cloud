@@ -20,10 +20,11 @@
 return [
     'routes' => [
 	   ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+	   ['name' => 'page#nameAutocomplete', 'url' => '/nameAutocomplete', 'verb' => 'GET'],
+	   ['name' => 'page#sharedUsersAndGroups', 'url' => '/sharedUsersAndGroups', 'verb' => 'GET'],
+	   ['name' => 'page#getFolder', 'url' => '/getFolder', 'verb' => 'GET'],
 	   ['name' => 'page#setPublicKey', 'url' => '/setPublicKey', 'verb' => 'POST'],
 	   ['name' => 'page#fileUpload', 'url' => '/fileUpload', 'verb' => 'POST'],
-	   ['name' => 'page#getFileTree', 'url' => '/getFileTree', 'verb' => 'GET'],
-	   ['name' => 'page#getFileTreeInterface', 'url' => '/getFileTreeInterface', 'verb' => 'GET'],
 	   ['name' => 'page#downloadFile', 'url' => '/downloadFile', 'verb' => 'GET'],
 	   ['name' => 'page#deleteFile', 'url' => '/deleteFile', 'verb' => 'POST'],
 	   ['name' => 'page#preShareFile', 'url' => '/preShareFile', 'verb' => 'POST'],
