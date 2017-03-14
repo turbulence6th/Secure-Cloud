@@ -69,17 +69,22 @@ class PageController extends Controller {
 	 	$users = $this->userManager->search($term);
 		$groups = $this->groupManager->search($term);
 		$response = array();
-		$userShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_USER, $file);
-		
+		$userShares = $this->manager->getSharesBy($me, \OCP\Share::SHARE_TYPE_USER, $file);
+		$userShared = $this->manager->getSharedWith($me, \OCP\Share::SHARE_TYPE_USER, $file);
 		foreach($users as $user) {
-			$pass = false;
+			$pass = true;
 			foreach($userShares as $share) {
-				if($share->getSharedWith() == $user) {
-					$pass = true;
+				if($share->getSharedWith() == $user->getUID()) {
+					$pass = false;
+				}
+			}
+			foreach($userShared as $share) {
+				if($share->getSharedBy() == $user->getUID()) {
+					$pass = false;
 				}
 			}
 			
-			if(!pass)
+			if($pass && $user->getUID() != $me)
 				array_push($response, $user->getUID());
 		}
 		foreach($groups as $group) {
@@ -252,7 +257,7 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	public function shareFile($fileId, $sharedWith, $sessionKey, $read, $update, $create, $delete, $share, $changeShare) {
+	public function shareFile($fileId, $sharedWith, $sessionKey) {
 		$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
@@ -260,41 +265,17 @@ class PageController extends Controller {
 		$share->setNode($file);
 		$share->setShareType(\OCP\Share::SHARE_TYPE_USER);
 		$share->setSharedBy($user);
-		$permission = 0;
-		$changeShared = 0;
-		
-		if($read == "true") {
-			$permission += \OCP\Constants::PERMISSION_READ;
+
+		if($file instanceof File) {
+			$permission = 19;
 		}
 		
-		if($update == "true") {
-			$permission += \OCP\Constants::PERMISSION_UPDATE;
+		if($file instanceof Folder) {
+			$permission = 31;
 		}
 		
-		if($create == "true") {
-			$permission += \OCP\Constants::PERMISSION_CREATE;
-		}
-		
-		if($delete == "true") {
-			$permission += \OCP\Constants::PERMISSION_DELETE;
-		}
-		
-		if($share == "true") {
-			$permission += \OCP\Constants::PERMISSION_SHARE;
-		}
-		
-		if($changeShare == "true") {
-			if($file instanceof File) {
-				$permission = 19;
-			}
-			
-			if($file instanceof Folder) {
-				$permission = 31;
-			}
-			
-			$changeShared = 1;
-		}
-		
+		$changeShared = 1;
+	
 		$share->setPermissions($permission);
 		$share->setSharedWith($sharedWith);
 		$this->manager->createShare($share);
@@ -430,7 +411,7 @@ class PageController extends Controller {
 	 * @NoAdminRequired
 	 * @NoCSRFRequired
 	 */
-	 public function shareWithGroup($fileId, $sharedWith, $encryptedSessionKey, $read, $update, $create, $delete, $share, $changeShare) {
+	 public function shareWithGroup($fileId, $sharedWith, $encryptedSessionKey) {
 	 	$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
@@ -438,40 +419,16 @@ class PageController extends Controller {
 		$share->setNode($file);
 		$share->setShareType(\OCP\Share::SHARE_TYPE_GROUP);
 		$share->setSharedBy($user);
-		$permission = 0;
-		$changeShared = 0;
 		
-		if($read == "true") {
-			$permission += \OCP\Constants::PERMISSION_READ;
+		if($file instanceof File) {
+			$permission = 19;
 		}
 		
-		if($update == "true") {
-			$permission += \OCP\Constants::PERMISSION_UPDATE;
+		if($file instanceof Folder) {
+			$permission = 31;
 		}
-		
-		if($create == "true") {
-			$permission += \OCP\Constants::PERMISSION_CREATE;
-		}
-		
-		if($delete == "true") {
-			$permission += \OCP\Constants::PERMISSION_DELETE;
-		}
-		
-		if($share == "true") {
-			$permission += \OCP\Constants::PERMISSION_SHARE;
-		}
-		
-		if($changeShare == "true") {
-			if($file instanceof File) {
-				$permission = 19;
-			}
 			
-			if($file instanceof Folder) {
-				$permission = 31;
-			}
-			
-			$changeShared = 1;
-		}
+		$changeShared = 1;
 		
 		$share->setPermissions($permission);
 		$share->setSharedWith($sharedWith);
