@@ -1,4 +1,5 @@
 var fileid = 0;
+var isFolder = false;
 window.onload = function(){
     
     function getURLParameter(name) {
@@ -112,6 +113,10 @@ window.onload = function(){
                         $("#filesizeanddate").html(info);
                         icon = $(".fa[data-icon-id=" + arg.item.id + "]").parent().html();
                         fileid = arg.item.id;
+                        if (arg.item.Mime == "httpd/unix-directory") 
+                            isFolder = true;
+                        else 
+                            isFodler = false;
                         $("#cryptofileicon").html(icon);
                         $("#cryptofileicon").children(".fa").addClass("fa-4x");
                     },
@@ -249,11 +254,22 @@ $( "#inputShare" ).autocomplete({
       minLength: 2,
       select: function( event, ui ) {
         console.log(ui.item.value);
+        var type;
+        var name = ui.item.value.replace("(group)","");
         if (ui.item.value.includes("(group)") ) {
+            type = "group";
             ShareWithGroup(fileid,ui.item.value.replace("(group)",""));
         } else {
+            type = "user";
             shareFile(fileid, ui.item.value);
         }
+        var info = "<div style='display:block;' data-name='" + name +"' data-type='" + type + "'>";
+        info += "<div class='avatar'>"+ name[0].toUpperCase() + "</div>";
+        info += ui.item.value;
+        info += filePermissions(31,isFolder);
+        info += "</div>";
+        $("#shared-users").append(info);
+
       }
 });
 

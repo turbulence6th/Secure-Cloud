@@ -228,9 +228,3 @@ function ShareWithGroup(fileId, groupname) {
 }
 
 
-
-//createCryptoGroup(groupname);
-//AddNewMemberToGroup(groupname,"user");
-//ShareWithGroup(23,groupname,groupPermissions);
-//then(function() {AddNewMemberToGroup(groupname,"user")}).
-//then(function() {ShareWithGroup(23,groupname,groupPermissions)});
