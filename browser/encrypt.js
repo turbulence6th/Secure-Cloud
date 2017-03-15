@@ -1,5 +1,3 @@
-var url = window.location.origin;
-
 // Fix Apple prefix if needed
 if (window.crypto && !window.crypto.subtle && window.crypto.webkitSubtle) {
 window.crypto.subtle = window.crypto.webkitSubtle;  // Won't work if subtle already exists

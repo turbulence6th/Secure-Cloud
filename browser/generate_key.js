@@ -1,6 +1,6 @@
 var hostname;
 chrome.tabs.query({'active': true, 'lastFocusedWindow': true}, function (tabs) {
-    hostname = new URL(tabs[0].url).origin;
+    hostname = new URL(tabs[0].url).origin + "/owncloud";
 });
 //CONVERT PEM FILEEEEEE
 function arrayBufferToBase64(arrayBuffer) {

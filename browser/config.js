@@ -1,4 +1,4 @@
-var url = window.location.origin;
+var url = window.location.origin + "/owncloud";
 // this fileId will be selected row id, it just for a test if it runs 
 var fileId  = 23;
 

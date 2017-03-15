@@ -8,7 +8,7 @@ window.onload = function(){
 
     function getGrid() {
         $.ajax({
-            url: '/index.php/apps/endtoend/getFolder', 
+            url: url + '/index.php/apps/endtoend/getFolder', 
             data: {
                 folderId: getURLParameter('folderId')
             },
