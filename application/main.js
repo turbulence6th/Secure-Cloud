@@ -24,7 +24,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
   chrome.runtime.onConnectExternal.addListener(function(port) {
     ports.push(port);
     port.onMessage.addListener(function(request, port) {
-      debugger;
+      if(request.type == 'generateKey') {
+        if(request.success) {
+          
+        }
+      }
     });
 
     port.onDisconnect.addListener(function(port) {

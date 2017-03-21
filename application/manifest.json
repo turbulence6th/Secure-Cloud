@@ -9,7 +9,10 @@
   },
   "app": {
     "background": {
-      "scripts": ["main.js"]
+      "scripts": ["main.js",
+                "generate_key.js"
+
+      ]
     }
   },
 "externally_connectable": {
