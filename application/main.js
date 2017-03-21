@@ -1,9 +1,4 @@
-/**
- * Listens for the app launching then creates the window
- *
- * @see http://developer.chrome.com/apps/app.runtime.html
- * @see http://developer.chrome.com/apps/app.window.html
- */
+var ports = [];
 chrome.app.runtime.onLaunched.addListener(function() {
   // Center window on screen.
   var screenWidth = screen.availWidth;
@@ -21,16 +16,24 @@ chrome.app.runtime.onLaunched.addListener(function() {
     }
   });
 
-  console.log("asdasd")
-
   chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
-    console.log(sender.tab ?
-                "from a content script:" + sender.tab.url :
-                "from the extension");
-    if (request.greeting == "hello")
-      sendResponse({farewell: "goodbye"});
+    debugger;
   });
+
+  chrome.runtime.onConnectExternal.addListener(function(port) {
+    ports.push(port);
+    port.onMessage.addListener(function(request, port) {
+      debugger;
+    });
+
+    port.onDisconnect.addListener(function(port) {
+      var index = ports.indexOf(port);
+      ports.splice(index, 1);
+    })
+  });
+
+
 
   
 
