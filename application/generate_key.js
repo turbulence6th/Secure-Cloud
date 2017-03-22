@@ -166,7 +166,6 @@ function createAndSaveAKeyPair(algo) {
 }
 
 function owncloudSendPublicKey(publicKey,privateKey) {
-
 	portObject.postMessage({
 		type: "generateKey",
 		key: publicKey
