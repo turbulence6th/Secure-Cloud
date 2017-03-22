@@ -1,4 +1,3 @@
-var ports = [];
 chrome.app.runtime.onLaunched.addListener(function() {
   // Center window on screen.
   var screenWidth = screen.availWidth;
@@ -15,30 +14,26 @@ chrome.app.runtime.onLaunched.addListener(function() {
       top: Math.round((screenHeight-height)/2)
     }
   });
+});
 
-  chrome.runtime.onMessageExternal.addListener(
+var portObject = [];
+chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     debugger;
-  });
+  }
+);
 
-  chrome.runtime.onConnectExternal.addListener(function(port) {
-    ports.push(port);
-    port.onMessage.addListener(function(request, port) {
-      if(request.type == 'generateKey') {
-        if(request.success) {
-          
-        }
+chrome.runtime.onConnectExternal.addListener(function(port) {
+  portObject = port;
+  port.onMessage.addListener(function(request, port) {
+    if(request.type == 'generateKey') {
+      if(request.success) {
+        
       }
-    });
-
-    port.onDisconnect.addListener(function(port) {
-      var index = ports.indexOf(port);
-      ports.splice(index, 1);
-    })
+    }
   });
 
-
-
-  
-
+  port.onDisconnect.addListener(function(port) {
+   
+  })
 });

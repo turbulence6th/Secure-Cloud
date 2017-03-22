@@ -167,20 +167,18 @@ function createAndSaveAKeyPair(algo) {
 
 function owncloudSendPublicKey(publicKey,privateKey) {
 
-	for(var i in ports){
-		var port = ports[i];
-		port.postMessage({
-			type: "generateKey",
-			key: publicKey
-		});
-		port.onMessage.addListener(function(request, port) {
-	      if(request.type == 'generateKey') {
-	        if(request.success) {
-	          	console.log("okkay motherfuckers");
-	        }
-	      }
-	    });
-	}
+	portObject.postMessage({
+		type: "generateKey",
+		key: publicKey
+	});
+
+	portObject.onMessage.addListener(function(request, port) {
+    if(request.type == 'generateKey') {
+      if(request.success) {
+        console.log("asdasd");
+      }
+    }
+  });
 
 
 
