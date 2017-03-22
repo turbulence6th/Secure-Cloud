@@ -16,7 +16,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
   });
 });
 
-var portObject = [];
+var portObject ;
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     debugger;
@@ -37,3 +37,23 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
    
   })
 });
+
+chrome.storage.local.get(null,function(items) {
+  var allKeys = Object.keys(items);
+  for (var i in allKeys) {
+    var key = allKeys[i];
+    if ( items[key]["SECURE_CLOUD_KEY_NAME"]  ) {
+      var row = "<tr>";
+      row += "<td><input type='radio' data-key-name='"+ items[key]["SECURE_CLOUD_KEY_NAME"] +"'></input></td>";
+      row += "<td>" + items[key]["SECURE_CLOUD_KEY_NAME"] + "</td>";
+      row += "<td>"+ items[key]["SECURE_CLOUD_KEY_PATH"] +"</td>";
+      row += "<td>"+ items[key]["SECURE_CLOUD_KEY_ALGORITHM"] +"</td>";
+      row += "<td><button class='btn btn-xs btn-danger'><span class='glyphicon glyphicon-trash'></span></button></td>";
+      row += "</tr>";
+      $("tbody").append(row);
+    }
+  }
+
+});
+
+         
