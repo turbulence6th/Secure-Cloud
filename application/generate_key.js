@@ -176,7 +176,8 @@ function owncloudSendPublicKey(publicKey,privateKey) {
 		port.onMessage.addListener(function(request, port) {
 	      if(request.type == 'generateKey') {
 	        if(request.success) {
-	          	console.log("okkay motherfuckers");
+	          	console.log("key has been saved");
+	          	
 	        }
 	      }
 	    });

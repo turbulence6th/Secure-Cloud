@@ -6,8 +6,10 @@
 	<script type="text/javascript" src="jqueryui.js" ></script>
 	<script type="text/javascript" src="bootstrap/js/bootstrap.js" ></script>
 	<script type="text/javascript" src="generate_key.js" ></script>
+	<script type="text/javascript" src="owncloud_login.js" ></script>
 	<script type="text/javascript" src="main.js" ></script>
 	<link rel="stylesheet" href="main.css">
+	<link rel="stylesheet" href="animate.css">
 
 
 </head>
@@ -15,32 +17,91 @@
 <body>
 
 <div class="container">
-	<div class="row">
-		<div class="col-md-12">
-			<center><h4>Secure Cloud</h4></center>
-			<div class="col-md-4 col-md-offset-4">
-				<form class="form ">
-					<div class="form-group">
-						<input id="keyname" class="form-control" placeholder="Name"></input>
-					</div>
+	<div class="dropdown" style="float: right; margin-top: 4px; margin-right: 4px;">
+        <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown">Owncloud Login<span class="caret"></span></button>
+        <ul class="dropdown-menu dropdown-menu-right dropdown-lr animated slideInRight" role="menu">
+            <div class="col-lg-12">
+                <div class="text-center"><h3><b>Log In</b></h3></div>
+                <form  class="form">
+                	<div class="form-group">
+                        <input type="text" id="login-url" tabindex="1" class="form-control" placeholder="Owncloud URL">
+                    </div>
+                    <div class="form-group">
+                        <input type="text" id="login-username" tabindex="2" class="form-control" placeholder="Username">
+                    </div>
 
-					<div class="form-group">
-					    <label for="algo" >Select encryption algorithm:</label>
-					    <select id="algo" class="form-control" >
-		                  <option value="RSASSA-PKCS1-v1_5">RSASSA-PKCS1-v1_5</option>
-		                  <option value="RSA-PSS">RSA-PSS</option>
-		                  <option value="RSA-OAEP" selected> RSA-OAEP</option>
-		                  <option value="ECDSA">ECDSA</option>
-		                </select>
-	                </div>
-					<div class="form-group">
-						<button id="generate-key" type="button" class="btn btn-sm btn-success" title="The key will be saved to application's folder">Generate Key</button>
+                    <div class="form-group">
+                        <input type="password" id="login-password" tabindex="3" class="form-control" placeholder="Password">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="row">
+                            <div class="col-xs-5 pull-right">
+                                <button type="button" id="owncloud-login" tabindex="4" class="form-control btn btn-success">Log In</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </ul>
+    </div>
+</div>
+
+<div class="container">
+	<div class="row">
+			<center><h4>Secure Cloud</h4></center>
+			<!-- user keys -->
+			<div class="col-sm-8 col-sm-offset-2">
+				<h5><strong>User Keys</strong></h5>
+				<div class="table-responsive">
+					<table class="table table-striped"  style="background-color: #eeeeee;">
+						<thead>
+							<tr>
+								<td></td>
+								<td>Name</td>
+								<td>Path</td>
+								<td>Algorithm</td>
+								<td></td>
+							</tr>
+						</thead>
+							<tr>
+								<td><input type="radio" data-key-name="Ramazan"></input></td>
+								<td>Ramazan</td>
+								<td>Home</td>
+								<td>RSA-OAEP</td>
+								<td><button class="btn btn-xs btn-danger"><span class="glyphicon glyphicon-trash"></span></button></td>								
+							</tr>
+
+					</table>
+				</div>
+			</div>
+
+			<div class="col-sm-8 col-sm-offset-2">
+				<div class="panel panel-info">
+					<div class="panel-body">
+						<form class="form-inline">
+							<div class="form-group">
+								<input id="keyname" class="form-control" placeholder="Name"></input>
+							</div>
+
+							<div class="form-group">
+							    <label for="algo" >Select encryption algorithm</label>
+							    <select id="algo" class="form-control" >
+				                  <option value="RSASSA-PKCS1-v1_5">RSASSA-PKCS1-v1_5</option>
+				                  <option value="RSA-PSS">RSA-PSS</option>
+				                  <option value="RSA-OAEP" selected> RSA-OAEP</option>
+				                  <option value="ECDSA">ECDSA</option>
+				                </select>
+			                </div>
+							<div class="form-group">
+								<button id="generate-key" type="button" class="btn btn-sm btn-success" title="The key will be saved to application's folder">Generate Key</button>
+							</div>
+						</form>
 					</div>
-				</form>
+				</div>
 			</div>
 
 
-		</div>
 	</div>
 </div>
 

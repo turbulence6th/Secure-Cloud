@@ -2,32 +2,17 @@ body{
   background-color:#a6edf2;
 }
 
-#downpri{
-  display:none;
-}
-#uppri{
-  display:none;
-}
-#downpub{
-  display:none;
-}
-#uppub{
-  display:none;
-}
-#upload-key{
-  display:block;
-}
-#download-key{
-  display:block;
+/* General sizing */
+ul.dropdown-lr {
+  width: 300px !important;
 }
 
-
-#file_operations{
-  display: none;
-}
-#upload_menu{
-  margin-top: 20px;
-}
-#file_operations{
-  margin-top: 20px;
+/* mobile fix */
+@media (max-width: 768px) {
+  .dropdown-lr h3 {
+    color: #eee;
+  }
+  .dropdown-lr label {
+    color: #eee;
+  }
 }
