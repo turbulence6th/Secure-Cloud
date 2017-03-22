@@ -166,6 +166,8 @@ function createAndSaveAKeyPair(algo) {
 }
 
 function owncloudSendPublicKey(publicKey,privateKey) {
+
+	console.log("sending");
 	portObject.postMessage({
 		type: "generateKey",
 		key: publicKey
@@ -174,7 +176,7 @@ function owncloudSendPublicKey(publicKey,privateKey) {
 	portObject.onMessage.addListener(function(request, port) {
     if(request.type == 'generateKey') {
       if(request.success) {
-        console.log("asdasd");
+        
       }
     }
   });

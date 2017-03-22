@@ -16,7 +16,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
   });
 });
 
-var portObject = [];
+var portObject;
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     debugger;
@@ -26,11 +26,7 @@ chrome.runtime.onMessageExternal.addListener(
 chrome.runtime.onConnectExternal.addListener(function(port) {
   portObject = port;
   port.onMessage.addListener(function(request, port) {
-    if(request.type == 'generateKey') {
-      if(request.success) {
-        
-      }
-    }
+    
   });
 
   port.onDisconnect.addListener(function(port) {
