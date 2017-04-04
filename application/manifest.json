@@ -14,17 +14,20 @@
                 "jquery.js",
                 "main.js",
                 "generate_key.js",
-                "owncloud_login.js"
+                "owncloud_login.js",
+                "encrypt.js",
+                "download.js",
+                "share.js"
 
       ]
     }
   },
 "externally_connectable": {
-  "matches": ["*://localhost/*"]
+  "matches": ["*://10.100.0.93/*", "*://localhost/*"]
 }
 ,"key": "endtoend",
  "permissions": [
-  "https://ajax.googleapis.com/ajax/libs/jquery/3.1.0/jquery.min.js"
+  "storage"
  ]
 
 }

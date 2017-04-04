@@ -101,12 +101,12 @@ function generate_key() {
 	var algo = $("#algo").val();
 	// generate rsa keys
 	var keyPair;
-	createAndSaveAKeyPair(algo).then(exportPublicKey);
+	createAndSaveAKeyPair(algo).then(function(param) { exportPublicKey(param,keyname,algo);});
 
 }
 
 	
-function exportPublicKey(key) {
+function exportPublicKey(key,keyname,algo) {
 	window.crypto.subtle.exportKey(
 		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 		key.publicKey //can be a publicKey or privateKey, as long as extractable was true
@@ -115,7 +115,7 @@ function exportPublicKey(key) {
 		var result = {};
 		result.publicKey = keydata;
 		result.key = key;
-		exportPrivateKey(result);
+		exportPrivateKey(result,keyname,algo);
 	})
 	.catch(function(err){
 		console.error(err);
@@ -123,7 +123,7 @@ function exportPublicKey(key) {
 	
 }
 
-function exportPrivateKey(param) {
+function exportPrivateKey(param,keyname,algo) {
 	console.log(param);
 	window.crypto.subtle.exportKey(
 		"jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
@@ -136,7 +136,7 @@ function exportPrivateKey(param) {
 		result.privateKey = JSON.stringify(keydata);
 		result.key = param.key;
 		// send public key to the server
-		owncloudSendPublicKey(result.publicKey,result.privateKey);
+		owncloudSendPublicKey(result.publicKey,result.privateKey,keyname,algo);
 	})
 	.catch(function(err){
 		console.error(err);
@@ -165,9 +165,7 @@ function createAndSaveAKeyPair(algo) {
 
 }
 
-function owncloudSendPublicKey(publicKey,privateKey) {
-
-	console.log("sending");
+function owncloudSendPublicKey(publicKey,privateKey,keyname,algo) {
 	portObject.postMessage({
 		type: "generateKey",
 		key: publicKey
@@ -176,7 +174,20 @@ function owncloudSendPublicKey(publicKey,privateKey) {
 	portObject.onMessage.addListener(function(request, port) {
     if(request.type == 'generateKey') {
       if(request.success) {
-        
+
+        console.log("The public key has been saved");
+        var object = {};
+        object[request.url] = {
+        	"SECURE_CLOUD_KEY_NAME" : keyname, 
+        	"SECURE_CLOUD_KEY_PATH" : "", 
+        	"SECURE_CLOUD_KEY_ALGORITHM" : algo,
+        	"SECURE_CLOUD_PUBLICKEY": publicKey,
+        	"SECURE_CLOUD_PRIVATEKEY": privateKey
+        };
+
+        chrome.storage.local.set(object);
+      } else {
+      	console.log("You already have a public key");
       }
     }
   });

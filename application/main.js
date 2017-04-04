@@ -26,10 +26,53 @@ chrome.runtime.onMessageExternal.addListener(
 chrome.runtime.onConnectExternal.addListener(function(port) {
   portObject = port;
   port.onMessage.addListener(function(request, port) {
-    
+    if(request.type == "uploadFile") {
+      var file = new File([window.atob(request.file)], request.fileName);
+      uploadFile(request.url, file);
+    }
+
+    else if(request.type == "downloadFile") {
+      var file = new Blob([base64ToArrayBuffer(request.file)], {type: "application/octet-stream"});
+      sessionKey = base64ToArrayBuffer(request.sessionKey);
+      var secretKey = request.secretKey;
+      var filename = request.fileName;
+      var url = request.url;
+
+      decryptTheFile(file, filename, privateKeys[url], sessionKey, secretKey);
+    }
+
+    else if(request.type == "shareFile") {
+      var publicKey = JSON.parse(request.publicKey);
+      sessionKey = base64ToArrayBuffer(request.sessionKey);
+      url = request.url;
+      importPublicKey(publicKey).
+      then(decryptSessionKey).
+      then(encryptSessionKey).
+      then(postShareFile);
+    }
   });
 
   port.onDisconnect.addListener(function(port) {
    
   })
 });
+
+chrome.storage.local.get(null,function(items) {
+  var allKeys = Object.keys(items);
+  for (var i in allKeys) {
+    var key = allKeys[i];
+    if ( items[key]["SECURE_CLOUD_KEY_NAME"]  ) {
+      var row = "<tr>";
+      row += "<td><input type='radio' data-key-name='"+ items[key]["SECURE_CLOUD_KEY_NAME"] +"'></input></td>";
+      row += "<td>" + items[key]["SECURE_CLOUD_KEY_NAME"] + "</td>";
+      row += "<td>"+ items[key]["SECURE_CLOUD_KEY_PATH"] +"</td>";
+      row += "<td>"+ items[key]["SECURE_CLOUD_KEY_ALGORITHM"] +"</td>";
+      row += "<td><button class='btn btn-xs btn-danger'><span class='glyphicon glyphicon-trash'></span></button></td>";
+      row += "</tr>";
+      $("tbody").append(row);
+    }
+  }
+
+});
+
+         
