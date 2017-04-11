@@ -145,6 +145,6 @@ function packageResults(encryptedKey) {
 } // end of processTheFile
 } // end of encryptTheFile click handler
                        
-function uploadFile(url, file) {
-	encryptTheFile(file, publicKeys[url]);
+function uploadFile(file) {
+	encryptTheFile(file, publicKey);
 }

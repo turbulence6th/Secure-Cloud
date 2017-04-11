@@ -23,7 +23,7 @@
     }
   },
 "externally_connectable": {
-  "matches": ["*://10.100.0.93/*", "*://localhost/*"]
+  "matches": ["*://144.122.128.160/*", "*://144.122.129.228/*", "*://144.122.120.17/*","*://localhost/*"]
 }
 ,"key": "endtoend",
  "permissions": [

@@ -1,9 +1,19 @@
-var publicKeys = {};
-var privateKeys = {};
+var publicKey;
+var privateKey;
 var url;
 
+function setKeys(keyname) {
+	console.log("Setting Keys: " + keyname);
+	chrome.storage.local.get(null,function(items) {
+		var exportedPublicKey = JSON.parse(items[keyname]["SECURE_CLOUD_PUBLIC_KEY"]);
+		var exportedPrivateKey = JSON.parse(items[keyname]["SECURE_CLOUD_PRIVATE_KEY"]);
+		import_public_key(exportedPublicKey);
+		import_private_key(exportedPrivateKey);
+	});
+}
+
 // import public key
-function import_public_key(keyname, exportedPublicKey) {	
+function import_public_key(exportedPublicKey) {	
 	window.crypto.subtle.importKey(
 	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 	    exportedPublicKey,
@@ -18,7 +28,7 @@ function import_public_key(keyname, exportedPublicKey) {
 	.then(function(key){
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(key);
-		publicKeys[keyname] = key;
+		publicKey = key;
 		
 	})
 	.catch(function(err){
@@ -26,9 +36,8 @@ function import_public_key(keyname, exportedPublicKey) {
 	    console.log("bug");
 	});
 }
-
 //import private key
-function import_private_key(keyname, exportedPrivateKey) {
+function import_private_key(exportedPrivateKey) {
 	window.crypto.subtle.importKey(
 	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 	    exportedPrivateKey,
@@ -43,23 +52,30 @@ function import_private_key(keyname, exportedPrivateKey) {
 	.then(function(key){
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(publicKey);
-		privateKeys[keyname] = key;
+		privateKey = key;
 	})
 	.catch(function(err){
 	    //console.error(err);
 	});
 }
 
+function arrayBufferToBase64(arrayBuffer) {
+    var byteArray = new Uint8Array(arrayBuffer);
+    var byteString = '';
+    for(var i=0; i < byteArray.byteLength; i++) {
+        byteString += String.fromCharCode(byteArray[i]);
+    }
+    var b64 = window.btoa(byteString);
 
+    return b64;
+}
 
-chrome.storage.local.get(null, function(items)
-{
-   	var allKeys = Object.keys(items);
-	for (var i in allKeys) {
-	    var key = allKeys[i];
-	    var exportedPublicKey = JSON.parse(items[key]["SECURE_CLOUD_PUBLICKEY"]);
-	    import_public_key(key, exportedPublicKey);
-	    var exportedPrivateKey = JSON.parse(items[key]["SECURE_CLOUD_PRIVATEKEY"]);
-	    import_private_key(key, exportedPrivateKey);
-	}
-});
+function base64ToArrayBuffer(b64) {
+    var byteString = window.atob(b64);
+    var byteArray = new Uint8Array(byteString.length);
+    for(var i=0; i < byteString.length; i++) {
+        byteArray[i] = byteString.charCodeAt(i);
+    }
+
+    return byteArray;
+}
