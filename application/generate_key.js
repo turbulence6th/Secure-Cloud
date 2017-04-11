@@ -1,82 +1,4 @@
 var hostname = ""
-//CONVERT PEM FILEEEEEE
-function arrayBufferToBase64(arrayBuffer) {
-    var byteArray = new Uint8Array(arrayBuffer);
-    var byteString = '';
-    for(var i=0; i < byteArray.byteLength; i++) {
-        byteString += String.fromCharCode(byteArray[i]);
-    }
-    var b64 = window.btoa(byteString);
-
-    return b64;
-}
-
-function addNewLines(str) {
-    var finalString = '';
-    while(str.length > 0) {
-        finalString += str.substring(0, 64) + '\n';
-        str = str.substring(64);
-    }
-
-    return finalString;
-}
-
-function toPemPub(privateKey) {
-    var b64 = addNewLines(arrayBufferToBase64(privateKey));
-    var pem = "-----BEGIN PUBLIC KEY-----\n" + b64 + "-----END PUBLIC KEY-----";
-    
-    return pem;
-}
-function toPemPri(privateKey) {
-    var b64 = addNewLines(arrayBufferToBase64(privateKey));
-    var pem = "-----BEGIN PRIVATE KEY-----\n" + b64 + "-----END PRIVATE KEY-----";
-    
-    return pem;
-}
-
-//CONVERT PEM FILEEEEEE
-
-//CONVERT RSA-KEY
-
-
-function removeLines(str) {
-	return str.replace("\n", "");
-}
-
-function base64ToArrayBuffer(b64) {
-    var byteString = window.atob(b64);
-    var byteArray = new Uint8Array(byteString.length);
-    for(var i=0; i < byteString.length; i++) {
-        byteArray[i] = byteString.charCodeAt(i);
-    }
-
-    return byteArray;
-}
-
-function pemToArrayBufferPri(pem) {
-    var b64Lines = removeLines(pem);
-    var b64Prefix = b64Lines.replace('-----BEGIN PRIVATE KEY-----', '');
-    var b64Final = b64Prefix.replace('-----END PRIVATE KEY-----', '');
-
-    return base64ToArrayBuffer(b64Final);
-}
-
-function pemToArrayBufferPub(pem) {
-    var b64Lines = removeLines(pem);
-    var b64Prefix = b64Lines.replace('-----BEGIN PUBLIC KEY-----', '');
-    var b64Final = b64Prefix.replace('-----END PUBLIC KEY-----', '');
-
-    return base64ToArrayBuffer(b64Final);
-}
-
-function downloadit(yazi,param){
-		console.log(yazi);
-		var link = document.createElement('a');
-		link.download = param;
-		var blob = new Blob([yazi], {type: 'text/plain'});
-		link.href = window.URL.createObjectURL(blob);
-		link.click();
-}
 
 function importPrivateKey(param){
 	window.crypto.subtle.importKey(
@@ -96,15 +18,33 @@ function importPrivateKey(param){
 }	
 
 /*************** GENERATE KEY    ***************************/
-function generate_key() {
-	var keyname = $("#keyname").val();
-	var algo = $("#algo").val();
+function generate_key(keyname,algo) {
+
 	// generate rsa keys
 	var keyPair;
 	createAndSaveAKeyPair(algo).then(function(param) { exportPublicKey(param,keyname,algo);});
 
 }
 
+function createAndSaveAKeyPair(algo) {
+
+	// Side effect: updates keyPair in enclosing scope with new value.
+	return window.crypto.subtle.generateKey(
+	    {
+		name: algo,
+		modulusLength: 2048,
+		publicExponent: new Uint8Array([1, 0, 1]),  //65537 24 bit gösterimi
+		hash: {name: "SHA-256"}
+	    },
+	    true,   
+	    ["encrypt", "decrypt"]).
+		then(function (key) {
+	    	keyPair = key;
+	    	console.log(key);
+	    	return key;
+		});
+
+}
 	
 function exportPublicKey(key,keyname,algo) {
 	window.crypto.subtle.exportKey(
@@ -135,67 +75,90 @@ function exportPrivateKey(param,keyname,algo) {
 		result.publicKey = JSON.stringify(param.publicKey);
 		result.privateKey = JSON.stringify(keydata);
 		result.key = param.key;
-		// send public key to the server
-		owncloudSendPublicKey(result.publicKey,result.privateKey,keyname,algo);
+		// save key in chrome storage
+		var object = {};
+    	object[keyname] = {"SECURE_CLOUD_KEY_NAME" : keyname, "SECURE_CLOUD_KEY_ALGORITHM" : algo, "SECURE_CLOUD_PRIVATE_KEY" : result.privateKey, "SECURE_CLOUD_PUBLIC_KEY" : result.publicKey };
+    	chrome.storage.local.set( object , function() {});
+    	// add it to table
+    	var item = object[keyname];
+    	addNewRowToUserKeysTable(item, "userkeys");
+		$(".tabpanel").removeClass("visible");
+		$(".tabpanel").addClass("hidden");
+		$("#displayKeys").toggleClass("hidden visible");
+		$(".list-group-item").removeClass("active");
+		$(".list-group-item[data-tab-name='displayKeys']").addClass("active"); 
+
 	})
 	.catch(function(err){
 		console.error(err);
 	});
 }
 
-
-		
-function createAndSaveAKeyPair(algo) {
-
-	// Side effect: updates keyPair in enclosing scope with new value.
-	return window.crypto.subtle.generateKey(
-	    {
-		name: algo,
-		modulusLength: 2048,
-		publicExponent: new Uint8Array([1, 0, 1]),  //65537 24 bit gösterimi
-		hash: {name: "SHA-256"}
-	    },
-	    true,   
-	    ["encrypt", "decrypt"]).
-		then(function (key) {
-	    	keyPair = key;
-	    	console.log(key);
-	    	return key;
-		});
-
+/************************ choose key *******************************/
+function chooseKey(url, value) {
+	chrome.storage.local.get(null,function(items) {
+		var allKeys = Object.keys(items);
+		for (var i in allKeys) {
+			var key = allKeys[i];
+			if ( items[key]["SECURE_CLOUD_KEY_NAME"] == value  ) {
+	  			owncloudSendPublicKey(items[key]["SECURE_CLOUD_PUBLIC_KEY"]);
+	  			addNewRowToMatchUpTable(url,value);
+	  			var object = {};
+    			object[url] = {"SECURE_CLOUD_KEY_NAME" : value, "SECURE_CLOUD_KEY_URL" : url, "SECURE_CLOUD_MATCHUP": true };
+    			chrome.storage.local.set( object , function() {});
+	  			$("#choose-key-alert").toggleClass("visible hidden");
+	  			$("#choose-key-button").toggleClass("visible hidden");
+	  			$(".choose-key-checkbox").toggleClass("visible hidden");
+			}
+		}
+	});
 }
 
-function owncloudSendPublicKey(publicKey,privateKey,keyname,algo) {
+function owncloudSendPublicKey(publicKey) {
 	portObject.postMessage({
 		type: "generateKey",
 		key: publicKey
 	});
+}
 
-	portObject.onMessage.addListener(function(request, port) {
-    if(request.type == 'generateKey') {
-      if(request.success) {
-        console.log("The public key has been saved");
-        var object = {};
-        object[request.url] = {"SECURE_CLOUD_KEY_NAME" : keyname, "SECURE_CLOUD_KEY_PATH" : "", "SECURE_CLOUD_KEY_ALGORITHM" : algo };
-        chrome.storage.local.set( object , function() {
-		});
-		
+/****************************************** import key **************************************/
 
-      } else {
-      	console.log("You already have a public key");
-      }
-    }
-  });
+function importKey(publicKey,privateKey) {
+	var b64Lines = removeLines(privateKey);
+    var b64Prefix = b64Lines.replace('-----BEGIN PRIVATE KEY-----', '');
+    var b64Final = b64Prefix.replace('-----END PRIVATE KEY-----', '');
+    var privateKey = atob(b64Final);
+
+    b64Lines = removeLines(publicKey);
+    b64Prefix = b64Lines.replace('-----BEGIN PUBLIC KEY-----', '');
+    b64Final = b64Prefix.replace('-----END PUBLIC KEY-----', '');
+    var publicKey = atob(b64Final);
+
+    portObject.postMessage({
+		type: "generateKey",
+		key: publicKey
+	});
+
+    var object = {};
+    object["ramoo"] = {"SECURE_CLOUD_KEY_NAME" : "test", "SECURE_CLOUD_KEY_ALGORITHM" : "test", "SECURE_CLOUD_PRIVATE_KEY" : privateKey, "SECURE_CLOUD_PUBLIC_KEY" : publicKey };
+    chrome.storage.local.set( object , function() {});
+
+   	portObject.onMessage.addListener(function(request, port) {
+	    if(request.type == 'generateKey') {
+	      if(request.success) {
+	        console.log("The public key has been saved");
+	        /*var object = {};
+	        object[request.url] = {"SECURE_CLOUD_KEY_NAME" : "test", "SECURE_CLOUD_KEY_ALGORITHM" : "test", "SECURE_CLOUD_PRIVATE_KEY" : privateKey, "SECURE_CLOUD_PUBLIC_KEY" : publicKey };
+	        chrome.storage.local.set( object , function() {});
+			*/
+	      } else {
+	      	console.log("You already have a public key");
+	      }
+    	}
+  	});
 
 
 
 }
 
 
-// Add event listeners once the DOM has fully loaded by listening for the
-// `DOMContentLoaded` event on the document, and adding your listeners to
-// specific elements when it triggers.
-document.addEventListener('DOMContentLoaded', function () {
-  document.getElementById('generate-key').addEventListener('click', generate_key);
-  
-});

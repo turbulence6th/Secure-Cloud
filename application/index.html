@@ -5,9 +5,13 @@
 	<script type="text/javascript" src="jquery.js" ></script>
 	<script type="text/javascript" src="jqueryui.js" ></script>
 	<script type="text/javascript" src="bootstrap/js/bootstrap.js" ></script>
-	<script type="text/javascript" src="generate_key.js" ></script>
-	<script type="text/javascript" src="owncloud_login.js" ></script>
+	<script type="text/javascript" src="forge.min.js"></script>
+	<script type="text/javascript" src="require.js"></script>
+	<script type="text/javascript" src="library.js"></script>
 	<script type="text/javascript" src="main.js" ></script>
+	<script type="text/javascript" src="generate_key.js" ></script>
+	<script type="text/javascript" src="app.js"></script>
+	<script type="text/javascript" src="config.js"></script>
 	<link rel="stylesheet" href="main.css">
 	<link rel="stylesheet" href="animate.css">
 
@@ -16,6 +20,108 @@
 
 <body>
 
+<div class="page-header">
+<center><h3>Secure Cloud</h3></center>
+</div>
+
+<div class="container">
+	<div class="tab-content">
+		<div class="col-md-3">
+			<div class="list-group">
+				<a class="list-group-item active" data-tab-name="displayKeys">Display Keys</a>
+				<a class="list-group-item" data-tab-name="importKeys">Import Keys</a>
+				<a class="list-group-item" data-tab-name="generateKeys">Generate Key</a>
+				<a class="list-group-item" data-tab-name="setup">Setup</a>
+			</div>
+		</div>
+		<div class="col-md-9">
+			<div class="tab-content well">
+				<div id="displayKeys" class="tabpanel visible">
+						<div id="choose-key-alert" class="alert alert-danger hidden">Please choose a key to use in new server.</div>
+						<h3>User Keys</h3>
+						<table id="userkeys" class="table table-striped table-hover">
+							<thead>
+								<tr>
+									<td></td>
+									<td>Name</td>
+									<td>Algorithm</td>
+									<td></td>
+								</tr>
+							</thead>
+							<tbody>
+								
+
+							</tbody>
+						</table>
+						<button id="choose-key-button"  class="btn btn-primary hidden">Choose Key</button>
+						<table id="matchups" class="table table-striped table-hover">
+							<h3>Server Key Matchups </h3>
+							<thead>
+								<tr>
+									<td>Server</td>
+									<td>Chosen Key</td>
+								</tr>
+							</thead>
+							<tbody>
+								
+							</tbody>
+						</table>
+				</div>
+				<div id="importKeys" class="tabpanel hidden">
+					<h3>Import Keys</h3>
+					<div class="form-group">
+						<h4>Import key as text</h4>
+						<label>Public Key</label>
+						<textarea id="publicKey" class="form-control" rows="8" style="margin-bottom: 4px; resize: none;"></textarea>
+						<label>Private Key</label>
+						<textarea id="privateKey" class="form-control" rows="8" style="margin-bottom: 4px; resize: none;"></textarea>
+						<button class="btn btn-info" id="import-key">Import</button>
+						<button class="btn btn-default" id="clear-textarea">Clear</button>
+					</div>
+				</div>
+				<div id="generateKeys" class="tabpanel hidden">
+					<h3>Generate Key</h3>
+					<div class="form-group">
+						<input id="keyname" class="form-control" placeholder="Name"></input>
+					</div>
+
+					<div class="form-group">
+					    <label for="algo" >Select encryption algorithm</label>
+					    <select id="algo" class="form-control" >
+		                  <option value="RSASSA-PKCS1-v1_5">RSASSA-PKCS1-v1_5</option>
+		                  <option value="RSA-PSS">RSA-PSS</option>
+		                  <option value="RSA-OAEP" selected> RSA-OAEP</option>
+		                  <option value="ECDSA">ECDSA</option>
+		                </select>
+	                </div>
+					<div class="form-group">
+						<button id="generate-key" type="button" class="btn btn-info" title="The key will be saved to application's folder">Generate Key</button>
+						<button class="btn btn-default" id="clear-input">Clear</button>
+					</div>
+				</div>
+				<div id="setup" class="tabpanel hidden">
+					<h3>Setup</h3>
+
+					<div class="form-group" style="margin-top: 8px;">
+						<h4>Generate Key</h4>
+						<p>If you're using this extension for the first time and if you do not have a key pair yet, please generate one now.</p>
+						<button id="goGenerate" class="btn btn-primary">Generate Key</button>
+					</div>
+					<div class="form-group" style="margin-top: 8px;">
+						<h4>Import Key</h4>
+						<p>Do you already have a key pair on another device? You can import your existing keys. Just export the key pair from the other device and then import them here.</p>
+						<button id="goImport" class="btn btn-primary">Import Key</button>
+					</div>
+
+				</div>
+			</div>
+		</div>
+		
+	</div>
+</div>
+
+
+<!--
 <div class="container">
 	<div class="dropdown" style="float: right; margin-top: 4px; margin-right: 4px;">
         <button class="btn btn-info dropdown-toggle" type="button" data-toggle="dropdown">Owncloud Login<span class="caret"></span></button>
@@ -50,7 +156,7 @@
 <div class="container">
 	<div class="row">
 			<center><h4>Secure Cloud</h4></center>
-			<!-- user keys -->
+		-->	<!-- user keys --> <!--
 			<div class="col-sm-8 col-sm-offset-2">
 				<button class="btn btn-sm btn-primary" style="float:right;">Add Key</button>
 				<h5><strong>User Keys</strong></h5>
@@ -100,6 +206,6 @@
 
 	</div>
 </div>
-
+-->
 </body>
 </html>
