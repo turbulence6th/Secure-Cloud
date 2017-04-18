@@ -1,23 +1,6 @@
-var hostname = ""
 
-function importPrivateKey(param){
-	window.crypto.subtle.importKey(
-    	"pkcs8",
-    	pemToArrayBufferPri(param),
-    	{
-        name: "RSA-OAEP",
-        hash: {name: "SHA-256"} // or SHA-512
-    	},
-    	true,
-    	["decrypt"]
-		).then(function(importedPrivateKey) {
-    		console.log(importedPrivateKey);
-		}).catch(function(err) {
-    	console.log(err);
-		});
-}	
+/***************************** GENERATE KEY    ***************************/
 
-/*************** GENERATE KEY    ***************************/
 function generate_key(keyname,algo) {
 
 	// generate rsa keys
@@ -82,6 +65,7 @@ function exportPrivateKey(param,keyname,algo) {
     	// add it to table
     	var item = object[keyname];
     	addNewRowToUserKeysTable(item, "userkeys");
+    	//setKeys();
 		$(".tabpanel").removeClass("visible");
 		$(".tabpanel").addClass("hidden");
 		$("#displayKeys").toggleClass("hidden visible");
@@ -123,41 +107,20 @@ function owncloudSendPublicKey(publicKey) {
 
 /****************************************** import key **************************************/
 
-function importKey(publicKey,privateKey) {
+function import_key(publicKey,privateKey) {
 	var b64Lines = removeLines(privateKey);
-    var b64Prefix = b64Lines.replace('-----BEGIN PRIVATE KEY-----', '');
-    var b64Final = b64Prefix.replace('-----END PRIVATE KEY-----', '');
-    var privateKey = atob(b64Final);
-
-    b64Lines = removeLines(publicKey);
-    b64Prefix = b64Lines.replace('-----BEGIN PUBLIC KEY-----', '');
-    b64Final = b64Prefix.replace('-----END PUBLIC KEY-----', '');
+    var b64Prefix = b64Lines.replace('-----BEGIN RSA PRIVATE KEY-----', '');
+    var b64Final = b64Prefix.replace('-----END RSA PRIVATE KEY-----', '');
+    var privatekey = atob(b64Final);
+    console.log(privatekey);
+    /*b64Lines = removeLines(publicKey);
+    b64Prefix = b64Lines.replace('-----BEGIN RSA PUBLIC KEY-----', '');
+    b64Final = b64Prefix.replace('-----END RSA PUBLIC KEY-----', '');
     var publicKey = atob(b64Final);
-
-    portObject.postMessage({
-		type: "generateKey",
-		key: publicKey
-	});
-
-    var object = {};
-    object["ramoo"] = {"SECURE_CLOUD_KEY_NAME" : "test", "SECURE_CLOUD_KEY_ALGORITHM" : "test", "SECURE_CLOUD_PRIVATE_KEY" : privateKey, "SECURE_CLOUD_PUBLIC_KEY" : publicKey };
-    chrome.storage.local.set( object , function() {});
-
-   	portObject.onMessage.addListener(function(request, port) {
-	    if(request.type == 'generateKey') {
-	      if(request.success) {
-	        console.log("The public key has been saved");
-	        /*var object = {};
-	        object[request.url] = {"SECURE_CLOUD_KEY_NAME" : "test", "SECURE_CLOUD_KEY_ALGORITHM" : "test", "SECURE_CLOUD_PRIVATE_KEY" : privateKey, "SECURE_CLOUD_PUBLIC_KEY" : publicKey };
-	        chrome.storage.local.set( object , function() {});
-			*/
-	      } else {
-	      	console.log("You already have a public key");
-	      }
-    	}
-  	});
-
-
+	*/
+    //var object = {};
+    //object["ramoo"] = {"SECURE_CLOUD_KEY_NAME" : "ramoo", "SECURE_CLOUD_KEY_ALGORITHM" : "RSA-OAEP", "SECURE_CLOUD_PRIVATE_KEY" : privateKey, "SECURE_CLOUD_PUBLIC_KEY" : publicKey };
+    //chrome.storage.local.set( object , function() {});
 
 }
 

@@ -1,35 +1,17 @@
-function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
+function decryptTheFile(file, iv,filename,privateKey,sessionKey,secretKey) {
     // Click handler. Reads the selected file, then decrypts it to
     // the random key pair's private key. Creates a Blob with the result,
   
-  	file = new File([file], "deneme", {type: "application/octet-stream" });
-    var sourceFile = file; 
-    
-    var reader = new FileReader();
-    reader.onload = processTheFile;
-    reader.readAsArrayBuffer(sourceFile);
 
-    function processTheFile() {
-    // Load handler for file reader. Needs to reference keyPair from
-    // enclosing scope.
-    var reader = this;              // Invoked by the reader object
-    var data = reader.result;
-
-    // First, separate out the relevant pieces from the file.
-    var keyLength       = new Uint16Array(data, 0, 2)[0];   // First 16 bit integer
-    var encryptedKey    = new Uint8Array( data, 2,              keyLength);
-    var iv              = new Uint8Array( data, 2 + keyLength,  16);
-    var ciphertext      = new Uint8Array( data, 2 + keyLength + 16);
+    var ciphertext      = file;
     var encryptedKey = sessionKey;
 
     decrypt(ciphertext, iv, encryptedKey, privateKey,secretKey).
     then(function(blob) {
          //return blob;
-
         var reader = new FileReader();
         reader.onload = function (readerEvt) {
-            debugger;
-            port.postMessage({
+            portObject.postMessage({
                 type: "downloadFile",
                 data: btoa(readerEvt.target.result),
                 fileName : filename
@@ -42,7 +24,7 @@ function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
     }).
     catch(function(err) {
           console.log("Something went wrong decrypting: " + err.message + "\n" + err.stack);
-          });
+    });
     
     
     function decrypt(ciphertext, iv, encryptedSessionKey, privateKey,secretKey) {
@@ -106,5 +88,4 @@ function decryptTheFile(file,filename,privateKey,sessionKey,secretKey) {
     }
     
     } // end of decrypt
-    } // end of processTheFile
     } // end of decryptTheFile

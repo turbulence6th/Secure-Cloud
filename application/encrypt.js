@@ -28,21 +28,16 @@ function encryptTheFile(file,publicKey) {
 		var reader = this;              // Was invoked by the reader object
 		var plaintext = reader.result;
 		encrypt(plaintext, publicKey).
-		then(function(data) {
-			var reader = new FileReader();
-			reader.onload = function (readerEvt) {
-				console.log("Upload last step");
-				portObject.postMessage({
-		        	type: "uploadFile",
-		        	file: btoa(readerEvt.target.result),
-		        	fileName : file.name,
-		        	encryptedKey : arrayBufferToBase64(data.encryptedKey)
-		        });
-			};
-			reader.onerror = function (error) {
-			   	console.log('Error: ', error);
-			};
-	        reader.readAsBinaryString(data.encryptedFile);
+		then(function(data) {		
+			console.log("Upload last step");
+			portObject.postMessage({
+	        	type: "uploadFile",
+	        	file: data.encryptedFile,
+	        	iv: data.iv,
+	        	fileName : file.name,
+	        	encryptedKey : data.encryptedKey
+	        });
+
 	   	}).
 		catch(function(err) {
 			console.log("Something went wrong encrypting: " + err.message + "\n" + err.stack);
@@ -127,18 +122,11 @@ function packageResults(encryptedKey) {
 // (in an enclosing scope) that was created with the
 // session key.
 
-	var length = new Uint16Array([encryptedKey.byteLength]);
-	return { "encryptedKey": encryptedKey,
-	"encryptedFile": new Blob(
-              [
-               length,             // Always a 2 byte unsigned integer
-               encryptedKey,       // "length" bytes long
-               encryptedFile[0],   // 16 bytes long initialization vector
-               encryptedFile[1]    // Remainder is the ciphertext
-               ],
-              {type: "application/octet-stream"}
-              )
-	};
+	return { "encryptedKey": arrayBufferToBase64(encryptedKey),
+	"encryptedFile" : arrayBufferToBase64(encryptedFile[1]),
+	"iv" : arrayBufferToBase64(encryptedFile[0]) };
+
+	
 }
 
 } // End of encrypt
