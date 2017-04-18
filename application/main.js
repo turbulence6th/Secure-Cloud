@@ -27,13 +27,15 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     }
 
     else if(request.type == "downloadFile") {
-      var file = new Blob([base64ToArrayBuffer(request.file)], {type: "application/octet-stream"});
+      var file = base64ToArrayBuffer(request.file);
+      var iv = base64ToArrayBuffer(request.iv);
       var sessionKey = base64ToArrayBuffer(request.sessionKey);
       var secretKey = request.secretKey;
       var filename = request.fileName;
-      var url = request.url;
 
-      decryptTheFile(file, filename, privateKey, sessionKey, secretKey);
+      console.log(request.file);
+
+      decryptTheFile(file, iv, filename, privateKey, sessionKey, secretKey);
     }
 
     else if(request.type == "shareFile") {

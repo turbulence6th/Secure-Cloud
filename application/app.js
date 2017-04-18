@@ -40,10 +40,7 @@ $( document ).ready(function() {
 	$("#import-key").click( function() {
 		var publicKey = $("#publicKey").val();
 		var privateKey = $("#privateKey").val();
-		/*var privateKey = pki.privateKeyFromPem(key);
-		var publicKey  = pki.setRsaPublicKey(privateKey.n, privateKey.e);
-		console.log(pki.publicKeyToPem(publicKey));*/
-		importKey(publicKey,privateKey);
+		import_key(publicKey,privateKey);
 	});
 
 	$("#generate-key").click( function() {
