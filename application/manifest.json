@@ -18,7 +18,8 @@
                 "encrypt.js",
                 "download.js",
                 "share.js",
-                "library.js"
+                "library.js",
+                "group.js"
 
       ]
     }
