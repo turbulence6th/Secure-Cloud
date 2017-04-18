@@ -17,7 +17,8 @@
                 "owncloud_login.js",
                 "encrypt.js",
                 "download.js",
-                "share.js"
+                "share.js",
+                "library.js"
 
       ]
     }
