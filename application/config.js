@@ -65,4 +65,3 @@ function import_private_key(exportedPrivateKey) {
 	    //console.error(err);
 	});
 }
-

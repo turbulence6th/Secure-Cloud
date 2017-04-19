@@ -1,6 +1,7 @@
+var sessionKey, fileId, sharedWith, iv, userPublicKey;
 
 // import public key
-function importPublicKey(exportedPublicKey) {	
+function importPublicKey(exportedPublicKey, localSessionKey, localIv, localFileId, localSharedWith) {	
 	return window.crypto.subtle.importKey(
 	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 	    exportedPublicKey,
@@ -15,9 +16,13 @@ function importPublicKey(exportedPublicKey) {
 	.then(function(key){
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(key);
-		publicKey = key;
-		console.log("imported public key");
-		console.log(publicKey);
+
+		sessionKey =localSessionKey;
+		fileId = localFileId;
+		sharedWith = localSharedWith;
+		iv = localIv;
+
+
 		return key;
 		
 	})
@@ -60,24 +65,20 @@ function shareFile(fileId, username) {
 
 }
 
-var sessionKey;
-
 function decryptSessionKey(key) {
 	console.log("public key decrypting");
-	publicKey = key;
-	console.log("imported public key");
-	console.log(publicKey);
+	userPublicKey = key;
 	// Returns a Promise that yields a Uint8Array AES key.
 	// encryptedKey is a Uint8Array, privateKey is the privateKey
 	// property of a Key key pair.
-	return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKeys['localhost'], sessionKey);
+	return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, sessionKey);
 }
 function encryptSessionKey(exportedKey) {
 	console.log("public key encrypting");
 	// Returns a Promise that yields an ArrayBuffer containing
 	// the encryption of the exportedKey provided as a parameter,
 	// using the publicKey found in an enclosing scope.
-	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKeys['localhost'], exportedKey);
+	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, userPublicKey, exportedKey);
 }
 
 function postShareFile(key) {
@@ -86,8 +87,9 @@ function postShareFile(key) {
 	portObject.postMessage({
 		type: "shareFile",
 		fileId: fileId,
-		sharedWith: username,
-		sessionKey: arrayBufferToBase64(key)
+		sharedWith: sharedWith,
+		sessionKey: arrayBufferToBase64(key),
+		iv: iv
 	});
 }
 
@@ -136,4 +138,3 @@ function changeShareFile(fileId,username,permissions) {
 		async : true
 	});
 }
-

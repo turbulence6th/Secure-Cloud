@@ -20,7 +20,8 @@
                 "encrypt.js",
                 "download.js",
                 "share.js",
-                "app.js"
+                "app.js",
+                "group.js"
 
       ]
     }
