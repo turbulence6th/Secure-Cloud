@@ -10,6 +10,8 @@
   "app": {
     "background": {
       "scripts": [
+                "library.js",
+                "OpenCrypto.js",
                 "config.js",
                 "jquery.js",
                 "main.js",
@@ -17,13 +19,14 @@
                 "owncloud_login.js",
                 "encrypt.js",
                 "download.js",
-                "share.js"
+                "share.js",
+                "app.js"
 
       ]
     }
   },
 "externally_connectable": {
-  "matches": ["*://144.122.128.160/*", "*://144.122.131.150/*", "*://144.122.120.17/*","*://localhost/*","*://10.100.0.93/*"]
+  "matches": ["*://144.122.128.44/*", "*://144.122.131.150/*", "*://144.122.120.17/*", "*://144.122.120.17/*","*://localhost/*","*://10.100.0.93/*"]
 }
 ,"key": "endtoend",
  "permissions": [

@@ -8,6 +8,7 @@
 	<script type="text/javascript" src="forge.min.js"></script>
 	<script type="text/javascript" src="require.js"></script>
 	<script type="text/javascript" src="library.js"></script>
+	<script type="text/javascript" src="OpenCrypto.js"></script>
 	<script type="text/javascript" src="main.js" ></script>
 	<script type="text/javascript" src="generate_key.js" ></script>
 	<script type="text/javascript" src="app.js"></script>
@@ -46,6 +47,8 @@
 									<td>Name</td>
 									<td>Algorithm</td>
 									<td></td>
+									<td></td>
+									
 								</tr>
 							</thead>
 							<tbody>
@@ -71,11 +74,11 @@
 					<h3>Import Keys</h3>
 					<div class="form-group">
 						<h4>Import key as text</h4>
-						<label>Public Key</label>
-						<textarea id="publicKey" class="form-control" rows="8" style="margin-bottom: 4px; resize: none;"></textarea>
+						<label>Key Name</label>
+						<input id="pem-name" class="form-control" style="margin-bottom: 4px;" />
 						<label>Private Key</label>
 						<textarea id="privateKey" class="form-control" rows="8" style="margin-bottom: 4px; resize: none;"></textarea>
-						<button class="btn btn-info" id="import-key">Import</button>
+						<button class="btn btn-info" type="button" id="import-key">Import</button>
 						<button class="btn btn-default" id="clear-textarea">Clear</button>
 					</div>
 				</div>
