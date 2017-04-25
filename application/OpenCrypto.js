@@ -520,7 +520,7 @@ OpenCrypto.prototype.pemPrivateToCrypto = function(pem) {
             resolve(importedPrivateKey);
         }).catch(function(err) {
             console.error(err);
-            //reject(err);
+            reject(err);
         });
     });
 };

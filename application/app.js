@@ -37,6 +37,12 @@ $( document ).ready(function() {
 		chooseKey(url, value);
 	});
 
+  $("#use-smartcard-button").click(function() {
+    var url = $(this).val();
+    console.log("Smartcard will be used for: " + url);
+    useSmartcard(url);
+  });
+
 	$("#import-key").click( function() {
 		var pemname = $("#pem-name").val();
 		var privatepem = $("#privateKey").val();
@@ -50,7 +56,7 @@ $( document ).ready(function() {
 
 	});
 
-	$(".tab-content").on('click', '.downloadPublicPem' ,function(){
+	$("body").on('click', '.downloadPublicPem' ,function(){
     var keyname = $(this).data("keyname");
     console.log("keyname: " + keyname);
     chrome.storage.local.get(null,function(items) {
@@ -75,7 +81,7 @@ $( document ).ready(function() {
         }
       });
   });
-  $(".tab-content").on('click', '.downloadPrivatePem' ,function(){
+  $("body").on('click', '.downloadPrivatePem' ,function(){
     var keyname = $(this).data("keyname");
     console.log("keyname: " + keyname);
     chrome.storage.local.get(null,function(items) {

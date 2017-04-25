@@ -19,6 +19,10 @@ function setKeys(keyname) {
 	});
 }
 
+function setKeysFromSmartCard() {
+	
+}
+
 // import public key
 function import_public_key(exportedPublicKey) {	
 	return window.crypto.subtle.importKey(

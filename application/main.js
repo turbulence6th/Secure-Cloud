@@ -60,7 +60,11 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
         $("#choose-key-alert").toggleClass("hidden visible");
         $(".choose-key-checkbox").toggleClass("hidden visible");
         $("#choose-key-button").toggleClass("hidden visible");
+        $("#use-smartcard-button").toggleClass("hidden visible");
         $("#choose-key-button").val(request.url);
+        $("#use-smartcard-button").val(request.url);
+      } else if (items[request.url]["SECURE_CLOUD_KEY_NAME"] == "SECURE_CLOUD_SMARTCARD") {
+      	setKeysFromSmartCard();
       } else {
         setKeys(items[request.url]["SECURE_CLOUD_KEY_NAME"]);
       }

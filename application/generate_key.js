@@ -145,4 +145,22 @@ function import_key(pemname, privatepem) {
 
 }
 
+/************************ use smartcard *************************/
+function useSmartcard(url) {
 
+	var publickey = getPublicKeyFromSmartCard();
+	owncloudSendPublicKey(publickey);
+	addNewRowToMatchUpTable(url,'SECURE_CLOUD_SMARTCARD');
+	var object = {};
+	object[url] = {"SECURE_CLOUD_KEY_NAME" : 'SECURE_CLOUD_SMARTCARD', "SECURE_CLOUD_KEY_URL" : url, "SECURE_CLOUD_MATCHUP": true };
+	chrome.storage.local.set( object , function() {});
+	$("#choose-key-alert").toggleClass("visible hidden");
+	$("#choose-key-button").toggleClass("visible hidden");
+	$("#use-smartcard-button").toggleClass("visible hidden");
+	$(".choose-key-checkbox").toggleClass("visible hidden");
+	
+}
+
+function getPublicKeyFromSmartCard() {
+	
+}
