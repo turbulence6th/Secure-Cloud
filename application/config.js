@@ -7,14 +7,25 @@ function setKeys(keyname) {
 	chrome.storage.local.get(null,function(items) {
 		var exportedPublicKey = JSON.parse(items[keyname]["SECURE_CLOUD_PUBLIC_KEY"]);
 		var exportedPrivateKey = JSON.parse(items[keyname]["SECURE_CLOUD_PRIVATE_KEY"]);
-		import_public_key(exportedPublicKey);
-		import_private_key(exportedPrivateKey);
+		import_public_key(exportedPublicKey).
+		then(function(key) {
+			console.log("Public key: " + key);
+			publicKey = key;
+		});
+		import_private_key(exportedPrivateKey).
+		then(function(key) {
+			privateKey = key;
+		});
 	});
+}
+
+function setKeysFromSmartCard() {
+	
 }
 
 // import public key
 function import_public_key(exportedPublicKey) {	
-	window.crypto.subtle.importKey(
+	return window.crypto.subtle.importKey(
 	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 	    exportedPublicKey,
 	    {   //these are the algorithm options
@@ -28,7 +39,7 @@ function import_public_key(exportedPublicKey) {
 	.then(function(key){
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(key);
-		publicKey = key;
+	    return key;
 		
 	})
 	.catch(function(err){
@@ -38,7 +49,7 @@ function import_public_key(exportedPublicKey) {
 }
 //import private key
 function import_private_key(exportedPrivateKey) {
-	window.crypto.subtle.importKey(
+	return window.crypto.subtle.importKey(
 	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
 	    exportedPrivateKey,
 	    {   //these are the algorithm options
@@ -52,7 +63,7 @@ function import_private_key(exportedPrivateKey) {
 	.then(function(key){
 	    //returns a publicKey (or privateKey if you are importing a private key)
 	    //console.log(publicKey);
-		privateKey = key;
+		return key;
 	})
 	.catch(function(err){
 	    //console.error(err);
