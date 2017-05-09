@@ -11,7 +11,11 @@ chrome.app.runtime.onLaunched.addListener(function() {
   });
 });
 
-var portObject;
+var portObject, portNative;
+portNative = chrome.runtime.connectNative("com.securecloud");
+portNative.onMessage.addListener(function (request, port) {
+  
+});
 chrome.runtime.onMessageExternal.addListener(
   function(request, sender, sendResponse) {
     debugger;
@@ -32,8 +36,6 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       var sessionKey = base64ToArrayBuffer(request.sessionKey);
       var secretKey = request.secretKey;
       var filename = request.fileName;
-
-      console.log(request.file);
 
       decryptTheFile(file, iv, filename, privateKey, sessionKey, secretKey);
     }
@@ -101,8 +103,8 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     var encryptedSecret = base64ToArrayBuffer(request.groupSecret);
     var sessionKey = base64ToArrayBuffer(request.sessionKey);
 
-    fileId = request.fileId;
-    groupname = request.groupname;
+    fileId2 = request.fileId;
+    groupname = request.sharedWith;
 
     decryptKey(sessionKey,privateKey).
       //then(importSessionKey).

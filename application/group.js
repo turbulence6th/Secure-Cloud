@@ -1,4 +1,4 @@
-var username, groupname;
+var fileId2, groupname;
 
 function exportSessionKey(sessionKey) {
 	// Returns a Promise that yields an ArrayBuffer export of
@@ -120,7 +120,7 @@ function ShareWithGroupRequest(encryptedSessionKey) {
 
 		portObject.postMessage({
 			type: "shareGroup",
-			fileId: fileId,
+			fileId: fileId2,
 			sharedWith: groupname,
 			encryptedSessionKey: arrayBufferToBase64(encryptedSessionKey)
 		});

@@ -29,7 +29,8 @@
 }
 ,"key": "endtoend",
  "permissions": [
-  "storage"
+  "storage",
+  "nativeMessaging"
  ]
 
 }

@@ -1,0 +1,9 @@
+{
+  "name": "com.securecloud",
+  "description": "Secure Cloud Smart Card Application",
+  "path": "/home/turbulence6th/execute.sh",
+  "type": "stdio",
+  "allowed_origins": [
+    "chrome-extension://mkfgfpmdncklopnjonmbgbgfgehacpbn/"
+  ]
+}
