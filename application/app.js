@@ -45,14 +45,37 @@ $( document ).ready(function() {
 
 	$("#import-key").click( function() {
 		var pemname = $("#pem-name").val();
+		if (secure_key_names.includes(pemname) || keyname == '') {
+			console.log('The key name is not valid');
+			var alert = "<div id='not-found' class='alert alert-danger'>The key name is not valid</div>";
+			$("#newKey").prepend(alert);
+			setTimeout(function(){ $("#not-found").remove() }, 3000);
+			return;
+		}
+		try {
+			var key = pki.privateKeyFromPem(privatepem);
+		} catch(err) {
+			console.log('The key is not valid');
+			var alert = "<div id='not-found' class='alert alert-danger'>The key is not valid</div>";
+			$("#newKey").prepend(alert);
+			setTimeout(function(){ $("#not-found").remove() }, 3000);
+			return;
+		} 
 		var privatepem = $("#privateKey").val();
 		import_key(pemname,privatepem);
 	});
 
 	$("#generate-key").click( function() {
 		var keyname = $("#keyname").val();
-		var algo = $("#algo").val();
-		generate_key(keyname,algo);
+		if (secure_key_names.includes(keyname) || keyname == '') {
+			console.log('The key name is not valid');
+			var alert = "<div id='not-found' class='alert alert-danger'>The key name is not valid</div>";
+			$("#newKey").prepend(alert);
+			setTimeout(function(){ $("#not-found").remove() }, 3000);
+			return;
+		}
+		
+		generate_key(keyname);
 
 	});
 

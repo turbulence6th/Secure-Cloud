@@ -32,18 +32,21 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 	else if(request.type == 'login') {
       var hasKey = false;
       chrome.storage.local.get(null,function(items) {
-      if (items[request.url] && items[request.url]["SECURE_CLOUD_MATCHUP"] ) {
-        hasKey = true;
-      }
-      console.log("Key found status: " + hasKey);
-      if (hasKey == true) {
-		if (items[request.url]["SECURE_CLOUD_KEY_NAME"] == "SECURE_CLOUD_SMARTCARD") {
-			setKeysFromSmartCard();
-		} else {
-			setKeys(items[request.url]["SECURE_CLOUD_KEY_NAME"]);
-		}
-	  }
-      
+        if (items[request.url] && items[request.url]["SECURE_CLOUD_MATCHUP"] ) {
+          hasKey = true;
+        }
+        console.log("Key found status: " + hasKey);
+        if (hasKey == true) {
+      	   if (items[request.url]["SECURE_CLOUD_KEY_NAME"] == "SECURE_CLOUD_SMARTCARD") {
+    			   setKeysFromSmartCard();
+    		  } else {
+    			   setKeys(items[request.url]["SECURE_CLOUD_KEY_NAME"]);
+    		  }
+	       }
+        portObject.postMessage({
+          type: "hasKey",
+          found: hasKey
+        }); 
 		});
 	}
 

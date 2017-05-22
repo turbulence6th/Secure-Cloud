@@ -2,8 +2,16 @@ var rsa = forge.pki.rsa;
 var pki = forge.pki;
 var publicKey;
 var privateKey;
-var secure_algorithm;
 var url;
+var secure_key_names = [];
+
+chrome.storage.local.get(null,function(items) {
+	var allKeys = Object.keys(items);
+	for (var i in allKeys) {
+    	var key = allKeys[i];
+		secure_key_names.push(items[key]["SECURE_CLOUD_KEY_NAME"]);    	
+	}
+});
 
 function setKeys(keyname) {
 	console.log("Setting Keys: " + keyname);

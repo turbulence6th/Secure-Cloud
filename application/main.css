@@ -42,3 +42,7 @@ ul.dropdown-lr {
   cursor: pointer;
   opacity: 0;
   filter: alpha(opacity=0); }
+
+.well {
+  padding: 10px !important;
+}
