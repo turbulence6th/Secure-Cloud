@@ -25,33 +25,7 @@ chrome.runtime.onMessageExternal.addListener(
 chrome.runtime.onConnectExternal.addListener(function(port) {
   portObject = port;
   port.onMessage.addListener(function(request, port) {
-    if(request.type == "uploadFile") {
-      var file = new File([window.atob(request.file)], request.fileName);
-      uploadFile(file);
-    }
-
-    else if(request.type == "downloadFile") {
-      var file = base64ToArrayBuffer(request.file);
-      var iv = base64ToArrayBuffer(request.iv);
-      var sessionKey = base64ToArrayBuffer(request.sessionKey);
-      var secretKey = request.secretKey;
-      var filename = request.fileName;
-
-      decryptTheFile(file, iv, filename, privateKey, sessionKey, secretKey);
-    }
-
-    else if(request.type == "shareFile") {
-      var userPublicKey = JSON.parse(request.publicKey);
-      var sessionKey = base64ToArrayBuffer(request.sessionKey);
-      var iv = request.iv;
-      var fileId = request.fileId;
-      var sharedWith = request.sharedWith;
-      importPublicKey(userPublicKey, sessionKey, iv, fileId, sharedWith).
-      then(decryptSessionKey).
-      then(encryptSessionKey).
-      then(postShareFile);
-    }
-    else if(request.type == 'login') {
+	if(request.type == 'login') {
       var hasKey = false;
       chrome.storage.local.get(null,function(items) {
       if (items[request.url] && items[request.url]["SECURE_CLOUD_MATCHUP"] ) {
@@ -72,51 +46,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       }
       
     });
-  }
-
-  else if(request.type == 'createCryptoGroup') {
-    createCryptoGroup(request.groupname);
-  }
-
-  else if(request.type == 'addMember') {
-    username = request.member;
-    groupname = request.groupname;
-
-    var encryptedSecret = base64ToArrayBuffer(request.secretKey);
-    var userPublicKey = JSON.parse(request.publicKey);
-    console.log(userPublicKey);
-    window.crypto.subtle.importKey(
-        "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-        userPublicKey,
-        {   //these are the algorithm options
-      name: "RSA-OAEP",
-      hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-        },
-        true, //whether the key is extractable (i.e. can be used in exportKey)
-        ["encrypt"] //"encrypt" or "wrapKey" for public key import or
-        //"decrypt" or "unwrapKey" for private key imports
-    ).
-    then(function(data2) {
-      userPublicKey = data2; return decryptKey(encryptedSecret,privateKey)}).
-    then(function(data3) {
-      return encryptUserSessionKey(data3,userPublicKey)}).
-    then(AddNewMemberToGroupRequest);
-  }
-
-  else if(request.type == 'shareGroup') {
-    var encryptedSecret = base64ToArrayBuffer(request.groupSecret);
-    var sessionKey = base64ToArrayBuffer(request.sessionKey);
-
-    fileId2 = request.fileId;
-    groupname = request.sharedWith;
-
-    decryptKey(sessionKey,privateKey).
-      //then(importSessionKey).
-    then(function(param) { sessionKey = param; return decryptKey(encryptedSecret,privateKey);}).
-    then(importSessionKey).
-    then( function(groupSecret) { return encryptSessionKeyWithGroupSecret(groupSecret,sessionKey);}).
-    then(ShareWithGroupRequest);
-  }
+	}
 
   });
 

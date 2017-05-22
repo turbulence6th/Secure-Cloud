@@ -11,23 +11,20 @@
     "background": {
       "scripts": [
                 "library.js",
-                "OpenCrypto.js",
+                "forge/dist/forge.js",
                 "config.js",
                 "jquery.js",
-                "main.js",
-                "generate_key.js",
-                "owncloud_login.js",
+                "background.js",
                 "encrypt.js",
                 "download.js",
                 "share.js",
-                "app.js",
                 "group.js"
 
       ]
     }
   },
 "externally_connectable": {
-  "matches": ["*://144.122.128.44/*", "*://144.122.131.150/*", "*://144.122.120.17/*", "*://144.122.120.17/*","*://localhost/*","*://10.100.0.93/*"]
+  "matches": ["*://144.122.128.44/*", "*://144.122.113.240/*", "*://144.122.120.17/*", "*://144.122.120.17/*","*://localhost/*","*://10.100.0.93/*"]
 }
 ,"key": "endtoend",
  "permissions": [

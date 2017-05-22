@@ -1,91 +1,32 @@
 var fileId2, groupname;
 
-function exportSessionKey(sessionKey) {
-	// Returns a Promise that yields an ArrayBuffer export of
-	// the sessionKey found in the enclosing scope.
-	console.log(sessionKey);
-	return window.crypto.subtle.exportKey('raw', sessionKey);
-}
-
-function encryptSessionKey(exportedKey) {
-	console.log(exportedKey);
-	// Returns a Promise that yields an ArrayBuffer containing
-	// the encryption of the exportedKey provided as a parameter,
-	// using the publicKey found in an enclosing scope.
-
-	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, publicKey, exportedKey);
-}
-function encryptUserSessionKey(exportedKey,userPublicKey) {
-	console.log("encrypt user session key")
-	console.log(exportedKey);
-	// Returns a Promise that yields an ArrayBuffer containing
-	// the encryption of the exportedKey provided as a parameter,
-	// using the publicKey found in an enclosing scope.
-
-	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, userPublicKey, exportedKey);
-}
-
 function createCryptoGroup(groupname) {
-	return window.crypto.subtle.generateKey(
-                                      {name: "AES-CBC", length: 128},
-                                      true,
-                                      ["encrypt", "decrypt"])
 
-	.then(exportSessionKey)
-	.then(encryptSessionKey)
-	.then(createCryptoGroupRequest);
-
-	function createCryptoGroupRequest(sessionKey) {
-		portObject.postMessage({
-			type: 'createCryptoGroup',
-			groupname: groupname,
-			secretKey: arrayBufferToBase64(sessionKey)
-		});
-	}
-
+	var secretKey = forge.random.getBytesSync(16);
+	var iv = forge.random.getBytesSync(16);
+	var encryptedSecretKey = publicKey.encrypt(secretKey, 'RSA-OAEP');
+	portObject.postMessage({
+		type: 'createCryptoGroup',
+		groupname: groupname,
+		iv : btoa(iv),
+		secretKey: btoa(encryptedSecretKey)
+	});
+	console.log("new crypto group: " + groupname);
 }
 
-function decryptKey(encryptedKey, privateKey) {
-    // Returns a Promise that yields a Uint8Array AES key.
-    // encryptedKey is a Uint8Array, privateKey is the privateKey
-    // property of a Key key pair.
-    console.log("decrypt key");
-    console.log(privateKey);
-    console.log(encryptedKey);
+function AddNewMemberToGroupRequest(username,groupname,encryptedSecretKey,userPublicKey) {
 
-    return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, encryptedKey);
-}
-
-function importSessionKey(keyBytes) {
-    console.log("import session key");
-    // Returns a Promise yielding an AES-CBC Key from the
-    // Uint8Array of bytes it is given.
-    
-    return window.crypto.subtle.importKey(
-                                          "raw",
-                                          keyBytes,
-                                          {name: "AES-CBC", length: 128},
-                                          true,
-                                          ["encrypt", "decrypt"]
-                                          );
-}
-
-
-
-function AddNewMemberToGroupRequest(sessionKey) {
-
-	console.log("buraya geldik");
-	console.log(sessionKey);
-
+	userPublicKey = pki.publicKeyFromPem(userPublicKey);
+    var secretKey = privateKey.decrypt(encryptedSecretKey, 'RSA-OAEP'); 
+    var newSecretKey = userPublicKey.encrypt(secretKey, 'RSA-OAEP');
 	portObject.postMessage({
 		type: "addMember",
 		username: username,
 		groupname: groupname,
-		secretKey: arrayBufferToBase64(sessionKey)
+		secretKey: btoa(newSecretKey)
 	});
 
 }
-
 
 function LeaveFromGroup(groupname) {
 

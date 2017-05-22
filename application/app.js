@@ -60,51 +60,25 @@ $( document ).ready(function() {
     var keyname = $(this).data("keyname");
     console.log("keyname: " + keyname);
     chrome.storage.local.get(null,function(items) {
-        if (items[keyname] && items[keyname]["SECURE_CLOUD_KEY_NAME"] == keyname ) {
-          var crypt = new OpenCrypto();
-          return window.crypto.subtle.importKey(
-            "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-            JSON.parse(items[keyname]["SECURE_CLOUD_PUBLIC_KEY"]),
-            {   //these are the algorithm options
-              name: "RSA-OAEP",
-              hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-            },
-            true, //whether the key is extractable (i.e. can be used in exportKey)
-            ["encrypt"] //"encrypt" or "wrapKey" for public key import or
-              //"decrypt" or "unwrapKey" for private key imports
-          ).then( function(publickey) {
-              crypt.cryptoPublicToPem(publickey).then(function(publicPem) {
-                downloadPem(publicPem,keyname,"public");
-              });
-          });
-          
-        }
-      });
+      if (items[keyname] && items[keyname]["SECURE_CLOUD_KEY_NAME"] == keyname ) {
+        var privatepem = items[keyname]["SECURE_CLOUD_PEM_FILE"];
+        var private = pki.privateKeyFromPem(privatepem);
+        var public = forge.pki.setRsaPublicKey(private.n, private.e);
+        var publicpem = pki.publicKeyToPem(public);
+        downloadPem(publicpem,keyname,"public");
+      }
+    });
   });
+
   $("body").on('click', '.downloadPrivatePem' ,function(){
     var keyname = $(this).data("keyname");
     console.log("keyname: " + keyname);
     chrome.storage.local.get(null,function(items) {
-        if (items[keyname] && items[keyname]["SECURE_CLOUD_KEY_NAME"] == keyname ) {
-          var crypt = new OpenCrypto();
-          return window.crypto.subtle.importKey(
-            "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-            JSON.parse(items[keyname]["SECURE_CLOUD_PRIVATE_KEY"]),
-            {   //these are the algorithm options
-              name: "RSA-OAEP",
-              hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-            },
-            true, //whether the key is extractable (i.e. can be used in exportKey)
-            ["decrypt"] //"encrypt" or "wrapKey" for public key import or
-              //"decrypt" or "unwrapKey" for private key imports
-          ).then( function(privatekey) {
-              crypt.cryptoPrivateToPem(privatekey).then(function(privatePem) {
-                downloadPem(privatePem,keyname,"private");
-              });
-          });
-          
-        }
-      });
+      if (items[keyname] && items[keyname]["SECURE_CLOUD_KEY_NAME"] == keyname ) {
+        var privatepem = items[keyname]["SECURE_CLOUD_PEM_FILE"];
+        downloadPem(privatepem,keyname,"private");
+      }
+    });
   });
 
 	

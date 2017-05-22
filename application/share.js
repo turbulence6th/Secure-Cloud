@@ -1,94 +1,12 @@
-var sessionKey, fileId, sharedWith, iv, userPublicKey;
 
-// import public key
-function importPublicKey(exportedPublicKey, localSessionKey, localIv, localFileId, localSharedWith) {	
-	return window.crypto.subtle.importKey(
-	    "jwk", //can be "jwk" (public or private), "spki" (public only), or "pkcs8" (private only)
-	    exportedPublicKey,
-	    {   //these are the algorithm options
-		name: "RSA-OAEP",
-		hash: {name: "SHA-256"}, //can be "SHA-1", "SHA-256", "SHA-384", or "SHA-512"
-	    },
-	    true, //whether the key is extractable (i.e. can be used in exportKey)
-	    ["encrypt"] //"encrypt" or "wrapKey" for public key import or
-			//"decrypt" or "unwrapKey" for private key imports
-	)
-	.then(function(key){
-	    //returns a publicKey (or privateKey if you are importing a private key)
-	    //console.log(key);
-
-		sessionKey =localSessionKey;
-		fileId = localFileId;
-		sharedWith = localSharedWith;
-		iv = localIv;
-
-
-		return key;
-		
-	})
-	.catch(function(err){
-	    //console.error(err);
-	    console.log("bug");
-	});
-}
-
-function shareFile(fileId, username) {
-	var sessionKey,publicKey;
-
-	$.ajax({	
-		url : url + '/index.php/apps/endtoend/preShareFile',
-		data :  {
-			fileId : fileId,
-			sharedWith : username,
-			
-		},
-		//dataType : 'json',
-		type : 'POST',
-		success : function(data) {
-			if (data.success) {
-				publicKey = JSON.parse(data.publicKey);
-				sessionKey = base64ToArrayBuffer(data.sessionKey);
-				console.log(publicKey);
-				importPublicKey(publicKey).
-				then(decryptSessionKey).
-				then(encryptSessionKey).
-				then(postShareFile);
-
-			}
-			
-			
-
-
-		},
-		async : true
-	});	
-
-}
-
-function decryptSessionKey(key) {
-	console.log("public key decrypting");
-	userPublicKey = key;
-	// Returns a Promise that yields a Uint8Array AES key.
-	// encryptedKey is a Uint8Array, privateKey is the privateKey
-	// property of a Key key pair.
-	return window.crypto.subtle.decrypt({name: "RSA-OAEP"}, privateKey, sessionKey);
-}
-function encryptSessionKey(exportedKey) {
-	console.log("public key encrypting");
-	// Returns a Promise that yields an ArrayBuffer containing
-	// the encryption of the exportedKey provided as a parameter,
-	// using the publicKey found in an enclosing scope.
-	return window.crypto.subtle.encrypt({name: "RSA-OAEP"}, userPublicKey, exportedKey);
-}
-
-function postShareFile(key) {
+function shareFile(key, iv, sharedWith, fileId) {
 	console.log("file sharing");
-	console.log(arrayBufferToBase64(key));
+	console.log(btoa(key));
 	portObject.postMessage({
 		type: "shareFile",
 		fileId: fileId,
 		sharedWith: sharedWith,
-		sessionKey: arrayBufferToBase64(key),
+		sessionKey: btoa(key),
 		iv: iv
 	});
 }
