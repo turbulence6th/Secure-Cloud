@@ -61,9 +61,10 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 
     else if(request.type == "shareFile") {
       var userPublicKey = pki.publicKeyFromPem(request.publicKey);
-      var sessionKey = privateKey.decrypt(atob(request.sessionKey), 'RSA-OAEP');
+      var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
+      sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
       var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
-      var iv = request.iv;
+      var iv = decodeURIComponent(escape(atob(request.iv)));
       var fileId = request.fileId;
       var sharedWith = request.sharedWith;
 	  shareFile(encryptSessionKey, iv, sharedWith, fileId);
