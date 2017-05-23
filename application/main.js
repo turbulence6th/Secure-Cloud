@@ -58,15 +58,16 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 
 chrome.storage.local.get(null,function(items) {
   var allKeys = Object.keys(items);
-  for (var i in allKeys) {
+  for (var i = 0; i < allKeys.length; i++) {
     var key = allKeys[i];
-    if (items[key]["SECURE_CLOUD_MATCHUP"]) {
+    if (items[key]["SECURE_CLOUD_MATCHUP"] ) {
       addNewRowToMatchUpTable(items[key]["SECURE_CLOUD_KEY_URL"],items[key]["SECURE_CLOUD_KEY_NAME"]);
     } 
     else if ( items[key]["SECURE_CLOUD_KEY_NAME"]  ) {
       addNewRowToUserKeysTable(items[key], "userkeys");
     }
   }
+
   
 });
 
@@ -80,10 +81,10 @@ function addNewRowToUserKeysTable(item,tablename) {
   var row = "<tr>";
   row += "<td><input type='radio' name='choose-key'  class='choose-key-checkbox "+ visibility +"' value='"+ item["SECURE_CLOUD_KEY_NAME"]  +"'/></td>";
   row += "<td>" + item["SECURE_CLOUD_KEY_NAME"] + "</td>";
-  row += "<td>"+ item["SECURE_CLOUD_KEY_ALGORITHM"] +"</td>";
-  row += "<td><button class='btn btn-xs btn-danger'><span class='glyphicon glyphicon-trash'></span></button></td>";
+  
   row += "<td><button type='button' data-keyname='"+ item["SECURE_CLOUD_KEY_NAME"] +"' class='btn btn-xs btn-primary downloadPublicPem'><span title='Download Public Pem File' class='glyphicon glyphicon-download'></span></button>";
   row += "<button type='button' style='margin-left:3px;' data-keyname='"+ item["SECURE_CLOUD_KEY_NAME"] +"' class='btn btn-xs btn-info downloadPrivatePem'><span title='Download Private Pem File' class='glyphicon glyphicon-download'></span></button></td>";
+  row += "<td><button type='button' data-keyname='"+ item["SECURE_CLOUD_KEY_NAME"] +"' class='btn btn-xs btn-danger deleteKey'><span class='glyphicon glyphicon-trash'></span></button></td>";
   row += "</tr>";
   $("#userkeys > tbody").append(row);
 

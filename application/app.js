@@ -11,17 +11,19 @@ $( document ).ready(function() {
 	$("#goImport").click( function() {
 		$(".tabpanel").removeClass("visible");
 		$(".tabpanel").addClass("hidden");
-		$("#importKeys").toggleClass("hidden visible");
+		$("#newKey").toggleClass("hidden visible");
 		$(".list-group-item").removeClass("active");
-		$("a[data-tab-name='importKeys']").addClass("active"); 
+		$("a[data-tab-name='newKey']").addClass("active"); 
+		$("#pem-name").focus();
 	});	
 
 	$("#goGenerate").click( function() {
 		$(".tabpanel").removeClass("visible");
 		$(".tabpanel").addClass("hidden");
-		$("#generateKeys").toggleClass("hidden visible");
+		$("#newKey").toggleClass("hidden visible");
 		$(".list-group-item").removeClass("active");
-		$("a[data-tab-name='generateKeys']").addClass("active"); 
+		$("a[data-tab-name='newKey']").addClass("active");
+		$("#keyname").focus(); 
 	});	
 
 	$("#clear-textarea").click( function() {
@@ -101,6 +103,18 @@ $( document ).ready(function() {
         var privatepem = items[keyname]["SECURE_CLOUD_PEM_FILE"];
         downloadPem(privatepem,keyname,"private");
       }
+    });
+  });
+
+  $("body").on('click', '.deleteKey' ,function(){
+    var keyname = $(this).data("keyname");
+    var row = $(this).parent().parent()[0];
+    console.log("keyname: " + keyname);
+    chrome.storage.local.get(null,function(items) {
+    	if (items[keyname] && items[keyname]["SECURE_CLOUD_KEY_NAME"] == keyname ) {
+        	chrome.storage.local.remove(keyname);
+        	row.remove();
+    	}
     });
   });
 

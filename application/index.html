@@ -14,7 +14,6 @@
 	<script type="text/javascript" src="generate_key.js" ></script>
 	<script type="text/javascript" src="app.js"></script>
 	<script type="text/javascript" src="config.js"></script>
-
 	<link rel="stylesheet" href="main.css">
 	<link rel="stylesheet" href="animate.css">
 
@@ -35,21 +34,21 @@
 				<a class="list-group-item" data-tab-name="newKey">New Key</a>
 				<a class="list-group-item" data-tab-name="setup">Setup</a>
 			</div>
+			<center><img src="icon.fg8" style="margin-top: 6px; margin-bottom: 16px;"></img></center>
 		</div>
 		<div class="col-md-9">
 			<div class="tab-content well">
 				<div id="displayKeys" class="tabpanel visible">
 						<div id="choose-key-alert" class="alert alert-danger hidden">Please choose a key to use in new server.</div>
-						<h3>User Keys</h3>
-						<table id="userkeys" class="table table-striped table-hover">
-							<thead>
+						<!-- user keys -->
+						<h4>User Keys</h4>
+						<table id="userkeys" class="table">
+							<thead class="thead-default">
 								<tr>
-									<td></td>
-									<td>Name</td>
-									<td>Algorithm</td>
-									<td></td>
-									<td></td>
-									
+									<th></th>
+									<th>Name</th>
+									<th>Download</th>
+									<th>Delete</th>	
 								</tr>
 							</thead>
 							<tbody>
@@ -59,12 +58,14 @@
 						</table>
 						<button style="margin-right: 4px;" id="choose-key-button"  class="btn btn-primary hidden">Choose Key</button>
 						<button id="use-smartcard-button"  class="btn btn-primary hidden">Use Smartcard</button>
-						<table id="matchups" class="table table-striped table-hover">
-							<h3>Server Key Matchups </h3>
-							<thead>
+						
+						<!-- server key matchups -->
+						<h4>Server Key Matchups </h4>
+						<table id="matchups" class="table">
+							<thead class="thead-default">
 								<tr>
-									<td>Server</td>
-									<td>Chosen Key</td>
+									<th>Server</th>
+									<th>Chosen Key</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -95,17 +96,24 @@
 				</div>
 			
 				<div id="setup" class="tabpanel hidden">
-					<h3>Setup</h3>
-
 					<div class="form-group" style="margin-top: 8px;">
 						<h4>Generate Key</h4>
-						<p>If you're using this extension for the first time and if you do not have a key pair yet, please generate one now.</p>
+						<p>If you do not have a key pair, you can generate one to use in secure cloud.</p>
 						<button id="goGenerate" class="btn btn-primary">Generate Key</button>
 					</div>
 					<div class="form-group" style="margin-top: 8px;">
 						<h4>Import Key</h4>
-						<p>Do you already have a key pair on another device? You can import your existing keys. Just export the key pair from the other device and then import them here.</p>
+						<p>Do you already have a key pair? You can import your existing keys. Just import the private pem file here.</p>
 						<button id="goImport" class="btn btn-primary">Import Key</button>
+					</div>
+					<div class="form-group" style="margin-top: 8px;">
+						<h4>Choose Key</h4>
+						<p>When you login a secure cloud module first time, you can choose an existing key to use. You have to login to module first to choose a key.</p>
+					</div>
+					<div class="form-group" style="margin-top: 8px;">
+						<h4>About</h4>
+						<p>Secure Cloud is an open source application. Do not hesitate to ask any question.</p>
+						<p><strong>Email:</strong> e1881689@ceng.metu.edu.tr</p>
 					</div>
 
 				</div>
