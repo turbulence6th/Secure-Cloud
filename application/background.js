@@ -67,8 +67,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       var iv = decodeURIComponent(escape(atob(request.iv)));
       var fileId = request.fileId;
       var sharedWith = request.sharedWith;
-	  shareFile(encryptSessionKey, iv, sharedWith, fileId);
-      
+	     shareFile(encryptSessionKey, iv, sharedWith, fileId);
     }
     
 

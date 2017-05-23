@@ -6,8 +6,8 @@ function shareFile(key, iv, sharedWith, fileId) {
 		type: "shareFile",
 		fileId: fileId,
 		sharedWith: sharedWith,
-		sessionKey: btoa(key),
-		iv: iv
+		sessionKey: btoa(unescape(encodeURIComponent(key))),
+		iv: btoa(unescape(encodeURIComponent(iv)))
 	});
 }
 
