@@ -50,25 +50,27 @@ class EncryptedShareDao {
         $stmt->closeCursor();
 	}
 	
-	public function add_with_change_share($file_id, $model_id, $session_key, $change_share ,$type) {
-		$sql = "INSERT INTO oc_encrypted_share (file_id, model_id, session_key, change_share, type) VALUES (?, ?, ?, ?, ?);";
+	public function add_with_change_share($file_id, $model_id, $session_key, $iv, $change_share ,$type) {
+		$sql = "INSERT INTO oc_encrypted_share (file_id, model_id, session_key, iv, change_share, type) VALUES (?, ?, ?, ?, ?, ?);";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(1, $file_id);
 		$stmt->bindParam(2, $model_id);
 		$stmt->bindParam(3, $session_key);
-		$stmt->bindParam(4, $change_share);
-		$stmt->bindParam(5, $type);
+		$stmt->bindParam(4, $iv);
+		$stmt->bindParam(5, $change_share);
+		$stmt->bindParam(6, $type);
         $stmt->execute();
         $stmt->closeCursor();
 	}
 	
-	public function update($file_id, $model_id, $session_key, $type) {
-		$sql = "UPDATE oc_encrypted_share SET session_key = ? WHERE file_id = ? AND model_id = ? AND type = ?";
+	public function update($file_id, $model_id, $session_key, $iv, $type) {
+		$sql = "UPDATE oc_encrypted_share SET session_key = ?, iv = ? WHERE file_id = ? AND model_id = ? AND type = ?";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(1, $session_key);
-		$stmt->bindParam(2, $file_id);
-		$stmt->bindParam(3, $model_id);
-		$stmt->bindParam(4, $type);
+		$stmt->bindParam(2, $iv);
+		$stmt->bindParam(3, $file_id);
+		$stmt->bindParam(4, $model_id);
+		$stmt->bindParam(5, $type);
         $stmt->execute();
 		$stmt->closeCursor();
 	}

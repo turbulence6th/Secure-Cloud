@@ -10,6 +10,20 @@ class CryptoGroupDao {
     public function __construct(IDBConnection $db) {
         $this->db = $db;
     }
+	
+	public function get_all_groups() {
+		$sql = "SELECT group_id FROM oc_crypto_group";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+		
+		$rows = array();
+        while($row = $stmt->fetch()) {
+        	array_push($rows, $row);
+        }
+		
+		$stmt->closeCursor();
+        return $rows;
+	}
 
     public function find($group_id, $user_id) {
         $sql = "SELECT * FROM oc_crypto_group WHERE group_id = ? AND user_id = ?";
@@ -32,12 +46,13 @@ class CryptoGroupDao {
 		$stmt->closeCursor();
 	}
 	
-	public function add($group_id, $user_id, $group_secret) {
-		$sql = "INSERT INTO oc_crypto_group (group_id, user_id, group_secret) VALUES (?, ?, ?);";
+	public function add($group_id, $user_id, $group_secret, $iv) {
+		$sql = "INSERT INTO oc_crypto_group (group_id, user_id, group_secret, iv) VALUES (?, ?, ?, ?);";
         $stmt = $this->db->prepare($sql);
         $stmt->bindParam(1, $group_id);
 		$stmt->bindParam(2, $user_id);
 		$stmt->bindParam(3, $group_secret);
+		$stmt->bindParam(4, $iv);
         $stmt->execute();
 		$stmt->closeCursor();
 	}
