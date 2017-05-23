@@ -1,11 +1,12 @@
-function decryptTheFile(file, iv,filename,privateKey,sessionKey,secretKey) {
+function decryptTheFile(ciphertext, iv,filename,privateKey,sessionKey,secretKey) {
     // Click handler. Reads the selected file, then decrypts it to
     // the random key pair's private key. Creates a Blob with the result,
   
     var data;
-    var ciphertext   = file;
 
-     if (secretKey) {
+    encrypted = forge.util.decode64(ciphertext);
+
+    if (secretKey) {
         secretKey = atob(secretKey);
         secretKey = privateKey.decrypt(secretKey, 'RSA-OAEP');
         
@@ -13,19 +14,18 @@ function decryptTheFile(file, iv,filename,privateKey,sessionKey,secretKey) {
             then(importSessionKey).
             then(decryptCiphertext);*/
     } else {   
-        input = forge.util.createBuffer(ciphertext);
+        input = forge.util.createBuffer(encrypted);
         sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP'); 
         var decipher = forge.cipher.createDecipher('AES-CBC', sessionKey);
         decipher.start({iv: iv});
         decipher.update(input);
         decipher.finish();
         // outputs decrypted hex
-        var decrypted = decipher.output;
-        data = decrypted.data;
+        var decrypted64 = decipher.output.getBytes();
     }  
     portObject.postMessage({
         type: "downloadFile",
-        data: btoa(data),
+        data: decrypted64,
         fileName : filename
     });
  

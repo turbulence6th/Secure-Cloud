@@ -26,8 +26,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
   portObject = port;
   port.onMessage.addListener(function(request, port) {
     if(request.type == "uploadFile") {
-      var file = new File([window.atob(request.file)], request.fileName);
-      uploadFile(file);
+      uploadFile(request.file, request.fileName);
     }
 	else if(request.type == 'login') {
       var hasKey = false;
@@ -51,9 +50,9 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 	}
 
     else if(request.type == "downloadFile") {
-      var file = atob(request.file);
-      var iv = atob(request.iv);
-      var sessionKey = atob(request.sessionKey);
+      var file = request.file;
+      var iv = decodeURIComponent(escape(atob(request.iv)));
+      var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
       var secretKey = request.secretKey;
       var filename = request.fileName;
 
