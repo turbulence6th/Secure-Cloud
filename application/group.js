@@ -8,13 +8,13 @@ function createCryptoGroup(groupname) {
 	portObject.postMessage({
 		type: 'createCryptoGroup',
 		groupname: groupname,
-		iv : btoa(iv),
-		secretKey: btoa(encryptedSecretKey)
+		iv : btoa(unescape(encodeURIComponent(iv))),
+		secretKey: btoa(unescape(encodeURIComponent(encryptedSecretKey)))
 	});
 	console.log("new crypto group: " + groupname);
 }
 
-function AddNewMemberToGroupRequest(username,groupname,encryptedSecretKey,userPublicKey) {
+function AddNewMemberToGroupRequest(username,groupname,encryptedSecretKey,userPublicKey, iv) {
 
 	userPublicKey = pki.publicKeyFromPem(userPublicKey);
     var secretKey = privateKey.decrypt(encryptedSecretKey, 'RSA-OAEP'); 
@@ -23,7 +23,8 @@ function AddNewMemberToGroupRequest(username,groupname,encryptedSecretKey,userPu
 		type: "addMember",
 		username: username,
 		groupname: groupname,
-		secretKey: btoa(newSecretKey)
+		iv: iv,
+		secretKey: btoa(unescape(encodeURIComponent(newSecretKey)))
 	});
 
 }

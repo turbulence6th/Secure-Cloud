@@ -79,9 +79,9 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     console.log(request.publicKey);
     var username = request.member;
     var groupname = request.groupname;
-    var encryptedSecretKey = atob(request.secretKey);
+    var encryptedSecretKey = decodeURIComponent(escape(atob(request.secretKey)));
     var userPublicKey = request.publicKey;
-    AddNewMemberToGroupRequest(username, groupname, encryptedSecretKey, userPublicKey);
+    AddNewMemberToGroupRequest(username, groupname, encryptedSecretKey, userPublicKey, request.iv);
     
   }
 
@@ -95,7 +95,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     decryptKey(sessionKey,privateKey).
       //then(importSessionKey).
     then(function(param) { sessionKey = param; return decryptKey(encryptedSecret,privateKey);}).
-    then(importSessionKey).
+    
     then( function(groupSecret) { return encryptSessionKeyWithGroupSecret(groupSecret,sessionKey);}).
     then(ShareWithGroupRequest);
   }
