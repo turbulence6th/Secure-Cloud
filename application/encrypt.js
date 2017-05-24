@@ -3,7 +3,6 @@
 function encryptTheFile(file,filename) {
 
 
-
 	var sessionKey = forge.random.getBytesSync(16);
 	var iv = forge.random.getBytesSync(16);
 	var cipher = forge.cipher.createCipher('AES-CBC', sessionKey);
