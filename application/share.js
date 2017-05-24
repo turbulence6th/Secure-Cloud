@@ -1,4 +1,9 @@
 
+function shareFile(key, iv, sharedWith, fileId) {
+	console.log("file sharing");
+	console.log(btoa(key));
+	
+}
 
 
 function unshareFile(fileId,username) {
