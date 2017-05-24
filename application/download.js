@@ -1,7 +1,7 @@
-function decryptTheFile(ciphertext, iv, secretiv, filename,privateKey,sessionKey,secretKey) {
+function decryptTheFile(ciphertext, sessioniv, secretiv, filename ,sessionKey,secretKey) {
     // Click handler. Reads the selected file, then decrypts it to
     // the random key pair's private key. Creates a Blob with the result,
-
+    var iv = decodeURIComponent(escape(atob(sessioniv)));
     var encrypted = forge.util.decode64(ciphertext);
     var input = forge.util.createBuffer(encrypted);
     if (secretKey) {

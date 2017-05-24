@@ -50,13 +50,8 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 	}
 
     else if(request.type == "downloadFile") {
-      var file = request.file;
-      var iv = decodeURIComponent(escape(atob(request.sessioniv)));
-      //var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
-      var secretKey = request.secretKey;
-      var secretiv = request.secretiv;
-      var filename = request.fileName;
-      decryptTheFile(file, iv, secretiv, filename, privateKey, request.sessionKey, secretKey);
+  
+      decryptTheFile(request.file, request.sessioniv, request.secretiv, request.fileName, request.sessionKey, request.secretKey);
     }
 
     else if(request.type == "shareFile") {
@@ -64,10 +59,16 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
       sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
       var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
-      var iv = decodeURIComponent(escape(atob(request.iv)));
       var fileId = request.fileId;
       var sharedWith = request.sharedWith;
-	     shareFile(encryptSessionKey, iv, sharedWith, fileId);
+      portObject.postMessage({
+        type: "shareFile",
+        fileId: fileId,
+        sharedWith: sharedWith,
+        sessionKey: btoa(unescape(encodeURIComponent(key))),
+        iv: request.iv
+      });
+	   
     }
     
 

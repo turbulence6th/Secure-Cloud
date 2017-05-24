@@ -2,9 +2,9 @@
 // Click handlers to encrypt or decrypt the given file:
 function encryptTheFile(file,filename) {
 
-
 	var sessionKey = forge.random.getBytesSync(16);
 	var iv = forge.random.getBytesSync(16);
+
 	var cipher = forge.cipher.createCipher('AES-CBC', sessionKey);
 	// encrypt plain text
 	cipher.start({iv: iv});
@@ -28,7 +28,6 @@ function encryptTheFile(file,filename) {
 
 }
 
-                       
 function uploadFile(file, filename) {
 	encryptTheFile(file, filename);
 }
