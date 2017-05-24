@@ -1,15 +1,4 @@
 
-function shareFile(key, iv, sharedWith, fileId) {
-	console.log("file sharing");
-	console.log(btoa(key));
-	portObject.postMessage({
-		type: "shareFile",
-		fileId: fileId,
-		sharedWith: sharedWith,
-		sessionKey: btoa(unescape(encodeURIComponent(key))),
-		iv: btoa(unescape(encodeURIComponent(iv)))
-	});
-}
 
 
 function unshareFile(fileId,username) {
