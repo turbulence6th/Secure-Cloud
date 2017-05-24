@@ -52,11 +52,11 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     else if(request.type == "downloadFile") {
       var file = request.file;
       var iv = decodeURIComponent(escape(atob(request.sessioniv)));
-      var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
+      //var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
       var secretKey = request.secretKey;
       var secretiv = request.secretiv;
       var filename = request.fileName;
-      decryptTheFile(file, iv, secretiv, filename, privateKey, sessionKey, secretKey);
+      decryptTheFile(file, iv, secretiv, filename, privateKey, request.sessionKey, secretKey);
     }
 
     else if(request.type == "shareFile") {
@@ -100,8 +100,8 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     cipher.start({iv: secretiv});
     cipher.update(forge.util.createBuffer(sessionKey));
     cipher.finish();
-    var encrypted = cipher.output;
-    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted.data)));
+    var encrypted = cipher.output.getBytes();
+    var encrypted64 = forge.util.encode64(encrypted);//btoa(unescape(encodeURIComponent(encrypted)));
     portObject.postMessage({
       type: "shareGroup",
       fileId: fileId,
