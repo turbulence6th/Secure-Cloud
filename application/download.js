@@ -7,12 +7,13 @@ function decryptTheFile(ciphertext, sessioniv, secretiv, filename ,sessionKey,se
     if (secretKey) {
         sessionKey = decodeURIComponent(escape(atob(sessionKey)));
         secretKey = decodeURIComponent(escape(atob(secretKey)));
+        secretiv = decodeURIComponent(escape(atob(secretiv)));
         secretKey = privateKey.decrypt(secretKey, 'RSA-OAEP');
         var decipher = forge.cipher.createDecipher('AES-CBC', secretKey);
         decipher.start({iv: secretiv});
         decipher.update(forge.util.createBuffer(sessionKey));
         decipher.finish();
-        sessionKey = decipher.output.getBytes();
+        sessionKey = decipher.output.data;
 
         var decipher2 = forge.cipher.createDecipher('AES-CBC', sessionKey);
         decipher2.start({iv: iv});
