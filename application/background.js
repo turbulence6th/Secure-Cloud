@@ -86,18 +86,33 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
   }
 
   else if(request.type == 'shareGroup') {
-    var encryptedSecret = base64ToArrayBuffer(request.groupSecret);
-    var sessionKey = base64ToArrayBuffer(request.sessionKey);
+    var encryptedSecret = decodeURIComponent(escape(atob(request.groupSecret)));
+    var encryptedSessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
+    var iv = decodeURIComponent(escape(atob(request.iv)));
 
-    fileId2 = request.fileId;
-    groupname = request.sharedWith;
+    var fileId = request.fileId;
+    var groupname = request.sharedWith;
 
-    decryptKey(sessionKey,privateKey).
-      //then(importSessionKey).
-    then(function(param) { sessionKey = param; return decryptKey(encryptedSecret,privateKey);}).
+    var sessionKey = privateKey.decrypt(encryptedSessionKey, 'RSA-OAEP');
+    var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
+
+
     
-    then( function(groupSecret) { return encryptSessionKeyWithGroupSecret(groupSecret,sessionKey);}).
-    then(ShareWithGroupRequest);
+    var cipher = forge.cipher.createCipher('AES-CBC', secretKey);
+    cipher.start({iv: iv});
+    cipher.update(forge.util.createBuffer(sessionKey));
+    cipher.finish();
+    var encrypted = cipher.output.getBytes();
+    var encrypted64 = forge.util.encode64(encrypted);
+    portObject.postMessage({
+      type: "shareGroup",
+      fileId: fileId,
+      sharedWith: groupname,
+      iv: request.iv,
+      encryptedSessionKey: encrypted64
+    });
+
+  
   }
 
   });

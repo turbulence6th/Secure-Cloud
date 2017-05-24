@@ -60,12 +60,7 @@ function ShareWithGroupRequest(encryptedSessionKey) {
 		
 		console.log(encryptedSessionKey);
 
-		portObject.postMessage({
-			type: "shareGroup",
-			fileId: fileId2,
-			sharedWith: groupname,
-			encryptedSessionKey: arrayBufferToBase64(encryptedSessionKey)
-		});
+		
 
 
 	}

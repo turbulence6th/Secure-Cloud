@@ -13,7 +13,7 @@ function encryptTheFile(file,filename) {
 	cipher.finish();
 
 	var encrypted = cipher.output.getBytes();
-	var encrypted64 = forge.util.encode64(encrypted)
+	var encrypted64 = forge.util.encode64(encrypted);
 	console.log(encrypted64);
 	// encrypt session key
 	var encryptedSessionKey = publicKey.encrypt(sessionKey, 'RSA-OAEP');
