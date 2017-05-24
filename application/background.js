@@ -59,13 +59,12 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
       sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
       var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
-      var fileId = request.fileId;
-      var sharedWith = request.sharedWith;
+
       portObject.postMessage({
         type: "shareFile",
-        fileId: fileId,
-        sharedWith: sharedWith,
-        sessionKey: btoa(unescape(encodeURIComponent(key))),
+        fileId: request.fileId,
+        sharedWith: request.sharedWith,
+        sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
         iv: request.iv
       });
 	   
