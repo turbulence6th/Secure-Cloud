@@ -101,7 +101,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     cipher.update(forge.util.createBuffer(sessionKey));
     cipher.finish();
     var encrypted = cipher.output.getBytes();
-    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted))),
+    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
     portObject.postMessage({
       type: "shareGroup",
       fileId: fileId,
