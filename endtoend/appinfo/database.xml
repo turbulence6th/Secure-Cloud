@@ -49,6 +49,10 @@
 				<type>clob</type>
 			</field>
 			<field>
+				<name>iv</name>
+				<type>clob</type>
+			</field>
+			<field>
 				<name>type</name>
 				<type>text</type>
 			</field>
@@ -81,6 +85,10 @@
 			<field>
 				<name>group_secret</name>
 				<type>clob</type>
+			</field>
+			<field>
+				<name>iv</name>
+				<type>text</type>
 			</field>
 		</declaration>
 	</table>

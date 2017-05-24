@@ -20,8 +20,10 @@
 return [
     'routes' => [
 	   ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
+	   ['name' => 'page#login', 'url' => '/login', 'verb' => 'POST'],
 	   ['name' => 'page#nameAutocomplete', 'url' => '/nameAutocomplete', 'verb' => 'GET'],
 	   ['name' => 'page#sharedUsersAndGroups', 'url' => '/sharedUsersAndGroups', 'verb' => 'GET'],
+	   ['name' => 'page#renameFile', 'url' => '/renameFile', 'verb' => 'POST'],
 	   ['name' => 'page#getFolder', 'url' => '/getFolder', 'verb' => 'GET'],
 	   ['name' => 'page#setPublicKey', 'url' => '/setPublicKey', 'verb' => 'POST'],
 	   ['name' => 'page#fileUpload', 'url' => '/fileUpload', 'verb' => 'POST'],
@@ -38,5 +40,7 @@ return [
 	   ['name' => 'page#leaveFromGroup', 'url' => '/leaveFromGroup', 'verb' => 'POST'],
 	   ['name' => 'page#preShareWithGroup', 'url' => '/preShareWithGroup', 'verb' => 'POST'],
 	   ['name' => 'page#shareWithGroup', 'url' => '/shareWithGroup', 'verb' => 'POST'],
+	   ['name' => 'page#getComments', 'url' => '/getComments', 'verb' => 'GET'],
+	   ['name' => 'page#makeComment', 'url' => '/makeComment', 'verb' => 'GET'],
     ]
 ];

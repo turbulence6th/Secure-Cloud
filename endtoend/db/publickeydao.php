@@ -10,6 +10,19 @@ class PublicKeyDao {
     public function __construct(IDBConnection $db) {
         $this->db = $db;
     }
+	
+	public function get_all_usernames() {
+		$sql = "SELECT user_id FROM oc_publickey";
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+
+		$rows = array();
+        while($row = $stmt->fetch()) {
+        	array_push($rows, $row);
+        }
+		$stmt->closeCursor();
+        return $rows;
+	}
 
     public function find($user_id) {
         $sql = "SELECT * FROM oc_publickey WHERE user_id = ?";
