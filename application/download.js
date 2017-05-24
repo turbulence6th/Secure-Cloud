@@ -5,13 +5,14 @@ function decryptTheFile(ciphertext, iv, secretiv, filename,privateKey,sessionKey
     var encrypted = forge.util.decode64(ciphertext);
     var input = forge.util.createBuffer(encrypted);
     if (secretKey) {
+        sessionKey = forge.util.decode64(sessionKey);
         secretKey = decodeURIComponent(escape(atob(secretKey)));
         secretKey = privateKey.decrypt(secretKey, 'RSA-OAEP');
         var decipher = forge.cipher.createDecipher('AES-CBC', secretKey);
         decipher.start({iv: secretiv});
         decipher.update(forge.util.createBuffer(sessionKey));
         decipher.finish();
-        sessionKey = decipher.output.data;
+        sessionKey = decipher.output.getBytes();
         sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP'); 
         var decipher2 = forge.cipher.createDecipher('AES-CBC', sessionKey);
         decipher2.start({iv: iv});
@@ -20,7 +21,7 @@ function decryptTheFile(ciphertext, iv, secretiv, filename,privateKey,sessionKey
         // outputs decrypted hex
         var decrypted64 = decipher2.output.getBytes();
     } else {   
-
+        sessionKey = decodeURIComponent(escape(atob(sessionKey)));
         sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP'); 
         var decipher = forge.cipher.createDecipher('AES-CBC', sessionKey);
         decipher.start({iv: iv});
