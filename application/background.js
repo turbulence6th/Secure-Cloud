@@ -51,12 +51,12 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
 
     else if(request.type == "downloadFile") {
       var file = request.file;
-      var iv = decodeURIComponent(escape(atob(request.iv)));
+      var iv = decodeURIComponent(escape(atob(request.sessioniv)));
       var sessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
       var secretKey = request.secretKey;
+      var secretiv = request.secretiv;
       var filename = request.fileName;
-
-      decryptTheFile(file, iv, filename, privateKey, sessionKey, secretKey);
+      decryptTheFile(file, iv, secretiv, filename, privateKey, sessionKey, secretKey);
     }
 
     else if(request.type == "shareFile") {
@@ -88,7 +88,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
   else if(request.type == 'shareGroup') {
     var encryptedSecret = decodeURIComponent(escape(atob(request.groupSecret)));
     var encryptedSessionKey = decodeURIComponent(escape(atob(request.sessionKey)));
-    var iv = decodeURIComponent(escape(atob(request.iv)));
+    var secretiv = decodeURIComponent(escape(atob(request.secretiv)));
 
     var fileId = request.fileId;
     var groupname = request.sharedWith;
@@ -97,7 +97,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
 
     var cipher = forge.cipher.createCipher('AES-CBC', secretKey);
-    cipher.start({iv: iv});
+    cipher.start({iv: secretiv});
     cipher.update(forge.util.createBuffer(sessionKey));
     cipher.finish();
     var encrypted = cipher.output.getBytes();
@@ -106,7 +106,7 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
       type: "shareGroup",
       fileId: fileId,
       sharedWith: groupname,
-      iv: request.iv,
+      sessioniv: request.sessioniv,
       encryptedSessionKey: encrypted64
     });
 
