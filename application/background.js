@@ -96,14 +96,12 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
     var sessionKey = privateKey.decrypt(encryptedSessionKey, 'RSA-OAEP');
     var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
 
-
-    
     var cipher = forge.cipher.createCipher('AES-CBC', secretKey);
     cipher.start({iv: iv});
     cipher.update(forge.util.createBuffer(sessionKey));
     cipher.finish();
     var encrypted = cipher.output.getBytes();
-    var encrypted64 = forge.util.encode64(encrypted);
+    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted))),
     portObject.postMessage({
       type: "shareGroup",
       fileId: fileId,

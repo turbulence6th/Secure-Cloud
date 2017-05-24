@@ -1,4 +1,3 @@
-var fileId2, groupname;
 
 function createCryptoGroup(groupname) {
 
