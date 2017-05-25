@@ -1,16 +1,133 @@
 
-function shareFile(publicKey, sessionKey, iv, fileId, sharedWith) {
+
+function shareFile(sharedType, sharedWith, publicKey, sessionKeys, fileId, groupSecret, secretiv) {
 	console.log("file sharing");
-	var userPublicKey = pki.publicKeyFromPem(publicKey);
-    var sessionKey = decodeURIComponent(escape(atob(sessionKey)));
+	var response = [];
+
+	if (sharedType == "user") {
+		var userPublicKey = pki.publicKeyFromPem(publicKey);
+		for (var i in sessionKeys) {
+			var key = sessionKeys[i];	
+			if (key.type == 'user') {
+				var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+				sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
+	    		var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
+	    		response.push({
+	    			sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
+	    			sessioniv: key.sessioniv,
+	    			fileId: key.fileId
+	    		});
+			} else if (key.type == "group") {
+				var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+				var encryptedSecret = decodeURIComponent(escape(atob(key.groupSecret)));
+				var secretiv = decodeURIComponent(escape(atob(key.secretiv)));
+				var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
+				
+				var decipher = forge.cipher.createDecipher('AES-CBC', secretKey);
+		        decipher.start({iv: secretiv});
+		        decipher.update(forge.util.createBuffer(sessionKey));
+		        decipher.finish();
+
+		        sessionKey = decipher2.output.data;
+		        var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
+			    
+			    response.push({
+	    			sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
+	    			sessioniv: key.sessioniv,
+	    			fileId: key.fileId
+	    		});
+			}
+		} 
+	} else if (sharedType == "group") {
+		for (var i in sessionKeys) {
+			var key = sessionKeys[i];	
+			if (key.type == 'user') {
+				var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+				sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
+
+				groupSecret = decodeURIComponent(escape(atob(groupSecret)));
+				secretiv = decodeURIComponent(escape(atob(secretiv)));
+				groupSecret = privateKey.decrypt(groupSecret, 'RSA-OAEP');
+	    		var cipher = forge.cipher.createCipher('AES-CBC', groupSecret);
+			    cipher.start({iv: secretiv});
+			    cipher.update(forge.util.createBuffer(sessionKey));
+			    cipher.finish();
+
+			    var encrypted = cipher.output.data;
+			    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
+	    		response.push({
+	    			sessionKey: encrypted64,
+	    			sessioniv: key.sessioniv,
+	    			fileId: key.fileId
+	    		});
+			} else if (key.type == "group") {
+				var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+				var encryptedSecret = decodeURIComponent(escape(atob(key.groupSecret)));
+				var secretiv = decodeURIComponent(escape(atob(key.secretiv)));
+				var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
+				
+				var decipher = forge.cipher.createDecipher('AES-CBC', secretKey);
+		        decipher.start({iv: secretiv});
+		        decipher.update(forge.util.createBuffer(sessionKey));
+		        decipher.finish();
+
+		        sessionKey = decipher2.output.data;
+		        var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
+			    
+			    response.push({
+	    			sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
+	    			sessioniv: key.sessioniv,
+	    			fileId: key.fileId
+	    		});
+			}
+		} 
+
+	}
+	/*for (var i in sessionKeys) {
+		var key = sessionKeys[i];
+		if (key.type == 'user') {
+			var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+			sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
+    		var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
+    		response.push({
+    			sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
+    			sessioniv: key.sessioniv,
+    			fileId: key.fileId
+    		});
+		} else if (key.type == 'group') {
+			var encryptedSecret = decodeURIComponent(escape(atob(key.groupSecret)));
+		    var encryptedSessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
+		    var secretiv = decodeURIComponent(escape(atob(key.secretiv)));
+
+			var sessionKey = privateKey.decrypt(encryptedSessionKey, 'RSA-OAEP');
+		    var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
+
+		    var cipher = forge.cipher.createCipher('AES-CBC', secretKey);
+		    cipher.start({iv: secretiv});
+		    cipher.update(forge.util.createBuffer(sessionKey));
+		    cipher.finish();
+
+		    var encrypted = cipher.output.data;
+		    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
+
+		    portObject.postMessage({
+		      type: "shareGroup",
+		      fileId: fileId,
+		      sharedWith: groupname,
+		      sessioniv: sessioniv,
+		      encryptedSessionKey: encrypted64
+		    });
+		}
+	}*/
+    /*var sessionKey = decodeURIComponent(escape(atob(sessionKey)));
     sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
-    var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
+    var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');*/
     portObject.postMessage({
       type: "shareFile",
-      fileId: fileId,
+      sharedType: sharedType,
       sharedWith: sharedWith,
-      sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
-      iv: iv
+      sessionKeys: response,
+      fileId: fileId 
     }); 
 }
 
