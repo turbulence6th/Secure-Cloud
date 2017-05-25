@@ -65,17 +65,23 @@ function shareFile(sharedType, sharedWith, publicKey, sessionKeys, fileId, group
 				var encryptedSecret = decodeURIComponent(escape(atob(key.groupSecret)));
 				var secretiv = decodeURIComponent(escape(atob(key.secretiv)));
 				var secretKey = privateKey.decrypt(encryptedSecret, 'RSA-OAEP');
-				
+
 				var decipher = forge.cipher.createDecipher('AES-CBC', secretKey);
 		        decipher.start({iv: secretiv});
 		        decipher.update(forge.util.createBuffer(sessionKey));
 		        decipher.finish();
 
-		        sessionKey = decipher2.output.data;
-		        var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
-			    
-			    response.push({
-	    			sessionKey: btoa(unescape(encodeURIComponent(encryptSessionKey))),
+		        sessionKey = decipher.output.data;
+
+		        var cipher = forge.cipher.createCipher('AES-CBC', groupSecret);
+			    cipher.start({iv: secretiv});
+			    cipher.update(forge.util.createBuffer(sessionKey));
+			    cipher.finish();
+
+			    var encrypted = cipher.output.data;
+			    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
+	    		response.push({
+	    			sessionKey: encrypted64,
 	    			sessioniv: key.sessioniv,
 	    			fileId: key.fileId
 	    		});
