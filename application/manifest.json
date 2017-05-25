@@ -4,21 +4,21 @@
   "version": "1.0",
   "minimum_chrome_version": "23",
   "icons": {
-    "16": "icon.fg8",
-    "128": "icon.fg8"
+    "16": "assets/images/icon.fg8",
+    "128": "assets/images/icon.fg8"
   },
   "app": {
     "background": {
       "scripts": [
-                "library.js",
-                "forge/dist/forge.js",
+                "lib/library.js",
+                "lib/forge/dist/forge.js",
                 "config.js",
-                "jquery.js",
+                "assets/js/jquery.js",
                 "background.js",
-                "encrypt.js",
-                "download.js",
-                "share.js",
-                "group.js"
+                "crypto/encrypt.js",
+                "crypto/download.js",
+                "crypto/share.js",
+                "crypto/group.js"
 
       ]
     }
