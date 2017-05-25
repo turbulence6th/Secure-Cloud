@@ -45,15 +45,15 @@ function shareFile(sharedType, sharedWith, publicKey, sessionKeys, fileId, group
 				var sessionKey = decodeURIComponent(escape(atob(key.sessionKey)));
 				sessionKey = privateKey.decrypt(sessionKey, 'RSA-OAEP');
 
-				groupSecret = decodeURIComponent(escape(atob(groupSecret)));
-				secretiv = decodeURIComponent(escape(atob(secretiv)));
-				groupSecret = privateKey.decrypt(groupSecret, 'RSA-OAEP');
-	    		var cipher = forge.cipher.createCipher('AES-CBC', groupSecret);
-			    cipher.start({iv: secretiv});
+				var decgroupSecret = decodeURIComponent(escape(atob(groupSecret)));
+				var decsecretiv = decodeURIComponent(escape(atob(secretiv)));
+				decgroupSecret = privateKey.decrypt(decgroupSecret, 'RSA-OAEP');
+	    		var cipher = forge.cipher.createCipher('AES-CBC', decgroupSecret);
+			    cipher.start({iv: decsecretiv});
 			    cipher.update(forge.util.createBuffer(sessionKey));
 			    cipher.finish();
 
-			    var encrypted = cipher.output.data;
+			    var encrypted = cipher.output.getBytes();
 			    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
 	    		response.push({
 	    			sessionKey: encrypted64,
@@ -73,15 +73,15 @@ function shareFile(sharedType, sharedWith, publicKey, sessionKeys, fileId, group
 
 		        sessionKey = decipher.output.data;
 
-		        groupSecret = decodeURIComponent(escape(atob(groupSecret)));
-		        secretiv = decodeURIComponent(escape(atob(secretiv)));
-		        groupSecret = privateKey.decrypt(groupSecret, 'RSA-OAEP');
-		        var cipher = forge.cipher.createCipher('AES-CBC', groupSecret);
-			    cipher.start({iv: secretiv});
+		        var decgroupSecret = decodeURIComponent(escape(atob(groupSecret)));
+		        var decsecretiv = decodeURIComponent(escape(atob(secretiv)));
+		        decgroupSecret = privateKey.decrypt(decgroupSecret, 'RSA-OAEP');
+		        var cipher = forge.cipher.createCipher('AES-CBC', decgroupSecret);
+			    cipher.start({iv: decsecretiv});
 			    cipher.update(forge.util.createBuffer(sessionKey));
 			    cipher.finish();
 
-			    var encrypted = cipher.output.data;
+			    var encrypted = cipher.output.getBytes();
 			    var encrypted64 = btoa(unescape(encodeURIComponent(encrypted)));
 	    		response.push({
 	    			sessionKey: encrypted64,
