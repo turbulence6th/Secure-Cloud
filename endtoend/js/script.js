@@ -73,7 +73,6 @@
 			
 			else if(request.type == "uploadFile") {
 				var formData = new FormData();
-				//formData.append('file',new File([atob(request.file)], request.fileName));
 				formData.append('file',request.file);
 				formData.append('filename',request.fileName);
 				formData.append('encryptedKey', request.encryptedKey);
@@ -110,10 +109,10 @@
 				$.ajax({	
 					url : OC.generateUrl('/apps/endtoend/shareFile'),
 					data :  {
-						fileId : request.fileId,
+						sharedType : request.sharedType,
 						sharedWith : request.sharedWith,
-						sessionKey : request.sessionKey,
-						iv: request.iv
+						sessionKeys : request.sessionKeys,
+						fileId: request.fileId
 					},
 					type : 'POST',
 					success : function(data) {
@@ -166,25 +165,6 @@
 							setTimeout(function(){$("#new-add-member-alert").remove();}, 3000);
 						}
 		
-					},
-					async : true
-				});
-			}
-			
-			else if(request.type == "shareGroup") {
-				$.ajax({	
-					url : OC.generateUrl('/apps/endtoend/shareWithGroup'),
-					data :  {
-						fileId : request.fileId,
-						sharedWith : request.sharedWith,
-						encryptedSessionKey : request.encryptedSessionKey
-					},
-					//dataType : 'json',
-					type : 'POST',
-					success : function(data) {
-						if (data.success) {
-							alert();
-						}
 					},
 					async : true
 				});
@@ -352,7 +332,8 @@
 																sessionKey: data.sessionKey,
 																secretKey: data.secretKey,
 																fileName: data.fileName,
-																iv: data.iv
+																sessioniv: data.sessioniv,
+																secretiv: data.secretiv
 															});
 														},
 														async : true
@@ -519,7 +500,8 @@
 		                        $("#sharesBy").html(info);
 		                    }
 		                    else {                   
-		                        info = "<div style='display:block;' data-name='" + data[i]['name'] +"' data-type='" + data[i]['type']+ "'>";
+		                        info = "<div style='display:block; padding:4px; border: 1px solid rgb(139, 116, 231);'  data-name='" + data[i]['name'] +"' data-type='" + data[i]['type']+ "'>";
+		                        info += "<i class='fa fa-lg fa-trash remove-share' style='float:right;'></i>";
 		                        info += "<div class='avatar'>"+ data[i]['name'][0].toUpperCase() + "</div>";
 		                        info += data[i]['name'];
 		                        if (data[i]['type'] == "group")
@@ -582,34 +564,11 @@
 		        if (ui.item.value.includes("(group)") ) {
 		            type = "group";
 		            $.ajax({	
-						url : OC.generateUrl('/apps/endtoend/preShareWithGroup'),
-						data :  {
-							fileId : fileid,
-							sharedWith : name,
-							
-						},
-						//dataType : 'json',
-						type : 'POST',
-						success : function(data) {
-							if (data.success) {
-								port.postMessage({
-									type: "shareGroup",
-									sessionKey: data.sessionKey,
-									groupSecret: data.groupSecret,
-									fileId: fileid,
-									sharedWith: name,
-									iv: data.iv
-								});
-							}
-						},
-						async : true
-					});
-		        } else {
-		        	$.ajax({	
 						url : OC.generateUrl('/apps/endtoend/preShareFile'),
 						data :  {
 							fileId : fileid,
-							sharedWith : ui.item.value
+							sharedWith : name,
+							sharedType : "group"
 							
 						},
 						//dataType : 'json',
@@ -619,17 +578,48 @@
 								port.postMessage({
 									type: "shareFile",
 									publicKey: data.publicKey,
-									sessionKey: data.sessionKey,
-									iv: data.iv,
-									fileId : fileid,
-									sharedWith: ui.item.value
+									sessionKeys: data.sessionKeys,
+									sharedWith: name,
+									sharedType: 'group',
+									groupSecret: data.groupSecret,
+									secretiv: data.secretiv,
+									fileId: fileid
+								});
+							}
+						},
+						async : true
+					});
+		        } else {
+		        	type = "user";
+		        	$.ajax({	
+						url : OC.generateUrl('/apps/endtoend/preShareFile'),
+						data :  {
+							fileId : fileid,
+							sharedWith : ui.item.value,
+							sharedType : "user"
+							
+						},
+						//dataType : 'json',
+						type : 'POST',
+						success : function(data) {
+							if (data.success) {
+								port.postMessage({
+									type: "shareFile",
+									publicKey: data.publicKey,
+									sessionKeys: data.sessionKeys,
+									sharedWith: ui.item.value,
+									sharedType: 'user',
+									groupSecret: data.groupSecret,
+									secretiv: data.secretiv,
+									fileId: fileid
 								});
 							}
 						},
 						async : true
 					});
 		        }
-		        var info = "<div style='display:block;' data-name='" + name +"' data-type='" + type + "'>";
+		        var info = "<div style='display:block; padding:4px; border: 1px solid rgb(139, 116, 231);' data-name='" + name +"' data-type='" + type + "'>";
+		        info += "<i class='fa fa-lg fa-trash remove-share' style='float:right;'></i>";
 		        info += "<div class='avatar'>"+ name[0].toUpperCase() + "</div>";
 		        info += ui.item.value;
 		        info += filePermissions(31,isFolder);
@@ -637,6 +627,26 @@
 		        $("#shared-users").append(info);
 		
 		      }
+		});
+		
+		$("body").on('click', '.remove-share', function() {
+			var that = this;
+			$.ajax({    
+		        url : OC.generateUrl('/apps/endtoend/unshareFile'),
+		        data :  {
+		            fileId : fileid,
+		            unsharedWith : $(this).parent().data("name"),
+		            sharedType: $(this).parent().data("type")
+		        },
+		        //dataType : 'json',
+		        type : 'POST',
+		        success : function(data) {
+					if(data.success) {
+						$(that).parent().remove();
+					}
+		        },
+		        async : true
+		    }); 
 		});
 		
 		$("body").on('change', '.changePerm', function() {

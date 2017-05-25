@@ -11,9 +11,10 @@ class CryptoGroupDao {
         $this->db = $db;
     }
 	
-	public function get_all_groups() {
-		$sql = "SELECT group_id FROM oc_crypto_group";
+	public function get_all_groups($user_id) {
+		$sql = "SELECT group_id FROM oc_crypto_group WHERE user_id = ?";
         $stmt = $this->db->prepare($sql);
+		$stmt->bindParam(1, $user_id);
         $stmt->execute();
 		
 		$rows = array();

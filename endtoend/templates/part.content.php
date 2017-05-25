@@ -51,17 +51,6 @@
 			</form>
 		</div>
 	</div>
-	<!--
-	<input type="file" style="display:none;" id="uploadFile"><br>
-	<button id="uploadFileButton"><i class="fa fa-plus"></i>Add File</button><br>
-	<input id="folderName"/>
-	<button id="uploadFolderButton"><i class="fa fa-plus"></i>Add Folder</button><br>
-	<input id="cryptoGroup"/>
-	
-	
-	<input id="addMemberGroup"/> <input id="addMemberMember"/>
-	<button id="addMemberCryptoGroup"><i class="fa fa-plus"></i>Add Member</button>
-	-->
 	<div id="jsGrid" style="margin-top: 10px;"></div>
 </div>
 <div class="col-md-4 hidden" id="cryptosidebar">
