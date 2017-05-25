@@ -1,8 +1,9 @@
 var rsa = forge.pki.rsa;
 var pki = forge.pki;
+
+
 var publicKey;
 var privateKey;
-var url;
 var secure_key_names = [];
 
 chrome.storage.local.get(null,function(items) {
