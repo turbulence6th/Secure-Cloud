@@ -28,7 +28,7 @@ function shareFile(sharedType, sharedWith, publicKey, sessionKeys, fileId, group
 		        decipher.update(forge.util.createBuffer(sessionKey));
 		        decipher.finish();
 
-		        sessionKey = decipher2.output.data;
+		        sessionKey = decipher.output.data;
 		        var encryptSessionKey = userPublicKey.encrypt(sessionKey, 'RSA-OAEP');
 			    
 			    response.push({
