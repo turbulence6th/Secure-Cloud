@@ -49,7 +49,11 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
   } else if (request.type == "uploadFile") {
       uploadFile(
         request.file, 
-        request.fileName
+        request.fileName,
+        request.sessionkey,
+        request.sessioniv,
+        request.secretkey,
+        request.secretiv
       );
   } else if (request.type == "downloadFile") {  
       decryptTheFile(

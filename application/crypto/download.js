@@ -13,7 +13,7 @@ function decryptTheFile(ciphertext, sessioniv, secretiv, filename ,sessionKey,se
         decipher.start({iv: secretiv});
         decipher.update(forge.util.createBuffer(sessionKey));
         decipher.finish();
-        sessionKey = decipher.output.data;
+        sessionKey = decipher.output.getBytes();
 
         var decipher2 = forge.cipher.createDecipher('AES-CBC', sessionKey);
         decipher2.start({iv: iv});
