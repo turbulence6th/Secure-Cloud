@@ -20,12 +20,12 @@
 return [
     'routes' => [
 	   ['name' => 'page#index', 'url' => '/', 'verb' => 'GET'],
-	   ['name' => 'page#login', 'url' => '/login', 'verb' => 'POST'],
 	   ['name' => 'page#nameAutocomplete', 'url' => '/nameAutocomplete', 'verb' => 'GET'],
 	   ['name' => 'page#sharedUsersAndGroups', 'url' => '/sharedUsersAndGroups', 'verb' => 'GET'],
 	   ['name' => 'page#renameFile', 'url' => '/renameFile', 'verb' => 'POST'],
 	   ['name' => 'page#getFolder', 'url' => '/getFolder', 'verb' => 'GET'],
 	   ['name' => 'page#setPublicKey', 'url' => '/setPublicKey', 'verb' => 'POST'],
+	   ['name' => 'page#preFileUpload', 'url' => '/preFileUpload', 'verb' => 'GET'],
 	   ['name' => 'page#fileUpload', 'url' => '/fileUpload', 'verb' => 'POST'],
 	   ['name' => 'page#downloadFile', 'url' => '/downloadFile', 'verb' => 'GET'],
 	   ['name' => 'page#deleteFile', 'url' => '/deleteFile', 'verb' => 'POST'],
@@ -38,9 +38,11 @@ return [
 	   ['name' => 'page#preAddNewMemberToGroup', 'url' => '/preAddNewMemberToGroup', 'verb' => 'POST'],
 	   ['name' => 'page#addNewMemberToGroup', 'url' => '/addNewMemberToGroup', 'verb' => 'POST'],
 	   ['name' => 'page#leaveFromGroup', 'url' => '/leaveFromGroup', 'verb' => 'POST'],
-	   ['name' => 'page#preShareWithGroup', 'url' => '/preShareWithGroup', 'verb' => 'POST'],
-	   ['name' => 'page#shareWithGroup', 'url' => '/shareWithGroup', 'verb' => 'POST'],
+	   ['name' => 'page#groupUsernameAutoComplete', 'url' => '/groupUsernameAutoComplete', 'verb' => 'GET'],
+	   ['name' => 'page#groupGroupnameAutoComplete', 'url' => '/groupGroupnameAutoComplete', 'verb' => 'GET'],
 	   ['name' => 'page#getComments', 'url' => '/getComments', 'verb' => 'GET'],
-	   ['name' => 'page#makeComment', 'url' => '/makeComment', 'verb' => 'GET'],
+	   ['name' => 'page#makeComment', 'url' => '/makeComment', 'verb' => 'POST'],
+	   ['name' => 'page#editComment', 'url' => '/editComment', 'verb' => 'POST'],
+	   ['name' => 'page#deleteComment', 'url' => '/deleteComment', 'verb' => 'POST'],
     ]
 ];
