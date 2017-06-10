@@ -53,7 +53,8 @@ chrome.runtime.onConnectExternal.addListener(function(port) {
         request.sessionkey,
         request.sessioniv,
         request.secretkey,
-        request.secretiv
+        request.secretiv,
+        request.shares
       );
   } else if (request.type == "downloadFile") {  
       decryptTheFile(
