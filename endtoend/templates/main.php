@@ -2,7 +2,7 @@
 script('endtoend', 'bootstrap');
 script('endtoend', 'bootstrap-treeview');
 script('endtoend', 'jsgrid.min');
-script('endtoend', 'script');
+script('endtoend', 'controller');
 
 style('endtoend', 'bootstrap');
 style('endtoend', 'bootstrap-treeview');

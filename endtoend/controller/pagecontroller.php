@@ -143,11 +143,16 @@ class PageController extends Controller {
 			$groupShared = $this->manager->getSharedWith($user, \OCP\Share::SHARE_TYPE_GROUP, $file);
 			foreach($userShared as $share) {
 				array_push($response, array("name" => $share->getSharedBy(), "type" => "user", 
-					"property" => "sharesBy"));
+					"property" => "sharesBy", "permissions" => $share->getPermissions()));
 			}
 			foreach($groupShared as $share) {
-				array_push($response, array("name" => $share->getSharedBy(), "type" => "group",
-					"property" => "sharesBy", "sharedWith" => $share->getSharedWith()));;
+				$node = $share->getNode();
+				if($node->getOwner()->getUID() != $user){
+					array_push($response, array("name" => $share->getSharedBy(), "type" => "group",
+						"property" => "sharesBy", "sharedWith" => $share->getSharedWith(),
+						"permissions" => $share->getPermissions()));;
+				}
+				
 			}		
 			return new DataResponse(array("data" => $response, "success" => true));
 		}
@@ -201,9 +206,41 @@ class PageController extends Controller {
 			}
 			
 			if($flag) {
-				array_push($response, array('id' => $node->getId(), 'Name' => preg_replace("/ENCRYPTED_/", '', $node->getName()),
+				$shareParam = "";
+				$userShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_USER, $node);
+				$groupShares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_GROUP, $node);
+				foreach($userShares as $share) {
+					$shareParam = "shared";
+				}
+				foreach($groupShares as $share) {
+					$shareParam = "shared";
+				}	
+				
+				$userShared = $this->manager->getSharedWith($user, \OCP\Share::SHARE_TYPE_USER, $node);
+				$groupShared = $this->manager->getSharedWith($user, \OCP\Share::SHARE_TYPE_GROUP, $node);
+				foreach($userShared as $share) {
+					$shareParam =  $share->getSharedBy();
+				}
+				foreach($groupShared as $share) {
+					$node = $share->getNode();
+					if($node->getOwner()->getUID() != $user){
+						$shareParam =  $share->getSharedBy();
+					}
+					
+				}	
+				
+				if($shareParam) {
+					$shareParam = "<span style='float:right;'><i class='fa fa-share-alt'></i> " . $shareParam . "</span>";
+				}
+				
+				else {
+					$shareParam = "";
+				}
+				
+				
+				array_push($response, array('id' => $node->getId(), 'Name' => preg_replace("/ENCRYPTED_/", '', $node->getName()) . $shareParam,
 					'Size' => $this->getSize($node->getSize()), 'Modified' => $this->timeElapsed($node->getMTime()) . " ago", 
-					'Mime' => $node->getMimeType()));
+					'Mime' => $node->getMimeType(), 'original' => preg_replace("/ENCRYPTED_/", '', $node->getName())));
 			}
 		}
 	
@@ -230,6 +267,46 @@ class PageController extends Controller {
 		}
 		
 		return new DataResponse(['success' => true]);
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function preFileUpload($filename, $folderId) {
+		$user = $this->session->getLoginName();
+		if ($folderId!="null") {
+			$folder = $this->rootFolder->getUserFolder($user)->getById($folderId)[0];
+		}
+	
+		else {
+			$folder = $this->rootFolder->getUserFolder($user);
+		}
+		
+		$file = $folder->search($filename)[0];
+		if($file) {
+			$encryptedShare = $this->encryptedShareDao->find_by_model($file->getId(), $user, 'user');
+			if($encryptedShare) {
+				return new DataResponse(['success' => true, 'sessionkey' => $encryptedShare['session_key'],
+					'sessioniv' => $encryptedShare['iv']]);
+			}
+			
+			else {
+				foreach($this->groupManager->getUserGroupIds($this->session->getUser()) as $group) {
+					$encryptedShare = $this->encryptedShareDao->find_by_model($file->getId(), $group, 'group');
+					if($encryptedShare) {
+						$cryptoGroup = $this->cryptoGroupDao->find($group, $user);
+						return new DataResponse(['success' => true, 'sessionkey' => $encryptedShare['session_key'],
+							'sessioniv' => $encryptedShare['iv'], 'secretkey' => $cryptoGroup['group_secret'], 
+							'secretiv' => $cryptoGroup['iv']]);
+					}
+				}
+			}
+		}
+		
+		else {
+			return new DataResponse(['success' => false]);
+		}
 	}
 	
 	/**
@@ -473,19 +550,29 @@ class PageController extends Controller {
 	 	$user = $this->session->getLoginName();
 		$userFolder = $this->rootFolder->getUserFolder($user);
 		$file = $userFolder->getById($fileId)[0];
-		$encryptedShareUser = $this->encryptedShareDao->find_by_model($fileId, $user, 'user');
-		$encryptedShareWith = $this->encryptedShareDao->find_by_model($fileId, $sharedWith, 'user');
-		if($file->getOwner()->getUID() == $user || ($encryptedShareUser['change_share'] && !$encryptedShareWith['change_share'])) {
-			if($type=="user")
-				$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_USER, $file)[0];
-			else if($type=="group")
-				$shareObj = $this->manager->getSharedWith($sharedWith, \OCP\Share::SHARE_TYPE_GROUP, $file)[0];
-			$shareObj->setPermissions($permissions);
-			$this->manager->updateShare($shareObj);
-			return new DataResponse(['success' => true]);
-		}
 		
-		return new DataResponse(['success' => false]);
+		if($type=="user") {
+			$shares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_USER, $file);
+			foreach($shares as $share) {
+				if($share->getSharedWith() == $sharedWith) {
+					$share->setPermissions($permissions);
+					$this->manager->updateShare($share);
+				}
+			}
+			
+		}
+			
+		else if($type=="group") {
+			$shares = $this->manager->getSharesBy($user, \OCP\Share::SHARE_TYPE_GROUP, $file);
+			foreach($shares as $share) {
+				if($share->getSharedWith() == $sharedWith) {
+					$share->setPermissions($permissions);
+					$this->manager->updateShare($share);
+				}
+			}
+		}
+			
+		return new DataResponse(['success' => true]);
 	 }
 
 	/**
@@ -560,7 +647,52 @@ class PageController extends Controller {
 	 	$user = $this->session->getLoginName();
 		$group = $this->groupManager->get($groupName);
 		$group->removeUser($this->session->getUser());
+		if($group->count() == 0) {
+			$group->delete();
+		}
 		$this->cryptoGroupDao->delete($groupName, $user);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function groupUsernameAutoComplete($term, $group_id) {
+	 	$users = $this->userManager->search($term);
+	 	$cryptoUsers = $this->publicKeyDao->get_all_usernames();
+		$group = $this->groupManager->get($group_id);
+		$response = array();
+		foreach($users as $user) {
+			$pass_crypto = false;
+			foreach($cryptoUsers as $entry) {
+				if($entry['user_id'] == $user->getUID() && !$group->inGroup($user)) {
+					array_push($response, $entry['user_id']);
+				}
+			}
+			
+		}
+		return new DataResponse($response);
+	 }
+	 
+	 /**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	 public function groupGroupnameAutoComplete($term) {
+	 	$me = $this->session->getLoginName();
+	 	$groups = $this->groupManager->search($term);
+		$cryptoGroups = $this->cryptoGroupDao->get_all_groups($me);
+		$response = array();
+		foreach($groups as $group) {
+			$pass_crypto = false;
+			foreach($cryptoGroups as $entry) {
+				if($entry['group_id'] == $group->getGID()) {
+					array_push($response, $entry['group_id']);
+				}
+			}
+			
+		}
+		return new DataResponse($response);
 	 }
 	 
 	 /**
@@ -572,7 +704,8 @@ class PageController extends Controller {
 		$comments = $this->commentManager->getForObject("files", $fileId);
 		foreach($comments as $comment) {
 			array_push($response, array("message" => $comment->getMessage(), "user" => $comment->getActorId(),
-			 "time" => $this->timeElapsed($comment->getCreationDateTime()->getTimestamp()) . " ago"));
+			 "time" => $this->timeElapsed($comment->getCreationDateTime()->getTimestamp()) . " ago",
+			 "id" => $comment->getId()));
 		}
 		return new DataResponse($response);
 	}
@@ -587,6 +720,28 @@ class PageController extends Controller {
 		$comment->setMessage($message);
 		$comment->setVerb('comment');
 		$this->commentManager->save($comment);
+		return new DataResponse(['success' => true, 'comment' => array("message" =>$comment->getMessage(), "user" => $comment->getActorId(),
+			 "time" => $this->timeElapsed($comment->getCreationDateTime()->getTimestamp()) . " ago",
+			 "id" => $comment->getId())]);
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function editComment($commentId, $message) {
+		$comment = $this->commentManager->get($commentId);
+		$comment->setMessage($message);
+		$this->commentManager->save($comment);
+		return new DataResponse(['success' => true]);
+	}
+	
+	/**
+	 * @NoAdminRequired
+	 * @NoCSRFRequired
+	 */
+	public function deleteComment($commentId) {
+		$this->commentManager->delete($commentId);
 		return new DataResponse(['success' => true]);
 	}
 	

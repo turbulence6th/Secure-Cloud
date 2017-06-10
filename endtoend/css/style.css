@@ -130,6 +130,11 @@ h3 {
 	border-left-color: #2fc18e; 
 }
 
+#groupsidebar {
+	border-left: 1px solid;
+	border-left-color: #2fc18e; 
+}
+
 #app-content-wrapper {
 	display: flex;
 }
